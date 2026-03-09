@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simply Nuts — Task Tracker</title>
+<style>
+:root {
+  --espresso: #24160f;
+  --walnut: #6e4023;
+  --copper: #b56a3b;
+  --pine: #3e5f43;
+  --cream: #fdf8f0;
+  --snow: #fffdfa;
+  --ink: #1d1612;
+  --card-border: #e8d9c7;
+  --forest-500: #3d8b3d;
+  --forest-600: #2d6b2d;
+  --wood-100: #f5e6d0;
+  --wood-200: #e8c9a0;
+  --wood-600: #8b5529;
+  --burn: #c45e20;
+  --done-bg: rgba(61,139,61,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 1rem;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: var(--espresso);
+  font-weight: 700;
+}
+
+header .subtitle {
+  font-size: 0.85rem;
+  color: var(--walnut);
+  margin-top: 0.25rem;
+}
+
+.global-progress {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--wood-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--forest-500);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: var(--walnut);
+  white-space: nowrap;
+  font-weight: 600;
+  min-width: 90px;
+  text-align: right;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.controls select, .controls button {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: var(--snow);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background: var(--wood-100);
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.5rem 1.5rem 3rem;
+}
+
+/* --- Sections (collapsible) --- */
+details.section {
+  background: var(--snow);
+  overflow: hidden;
+}
+
+details.section > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+  background: var(--snow);
+  transition: background 0.15s;
+}
+
+details.section > summary:hover {
+  background: var(--wood-100);
+}
+
+details.section > summary::-webkit-details-marker { display: none; }
+
+.section-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--walnut);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+details.section[open] > summary .section-arrow {
+  transform: rotate(90deg);
+}
+
+.section-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--espresso);
+  flex: 1;
+}
+
+.section-progress {
+  font-size: 0.75rem;
+  color: var(--walnut);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.section-bar {
+  width: 60px;
+  height: 5px;
+  background: var(--wood-100);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.section-bar-fill {
+  height: 100%;
+  background: var(--forest-500);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.section-body {
+  padding: 0 1rem 1rem;
+}
+
+.section-intro {
+  font-size: 0.82rem;
+  color: var(--walnut);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* --- Section Notes --- */
+.section-notes-wrap {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--card-border);
+}
+
+.section-notes-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--walnut);
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.section-notes-label::before {
+  content: "📝";
+  font-size: 0.85rem;
+}
+
+.section-notes {
+  width: 100%;
+  min-height: 70px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: rgba(253,248,240,0.6);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+
+.section-notes:focus {
+  border-color: var(--copper);
+  background: var(--snow);
+  box-shadow: 0 0 0 2px rgba(181,106,59,0.1);
+}
+
+.section-notes::placeholder {
+  color: var(--wood-200);
+  font-style: italic;
+}
+
+/* --- Section Meta Toggle & Directions Panel --- */
+.section-meta-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--copper);
+  background: transparent;
+  border: 1.5px solid var(--copper);
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.section-meta-toggle:hover {
+  background: var(--copper);
+  color: var(--snow);
+}
+
+.section-meta-toggle.open {
+  background: var(--copper);
+  color: var(--snow);
+  transform: rotate(45deg);
+}
+
+.section-meta {
+  display: none;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(181,106,59,0.05);
+  border: 1px solid rgba(181,106,59,0.18);
+  border-radius: 8px;
+}
+
+.section-meta.visible {
+  display: block;
+}
+
+.section-meta-field {
+  margin-bottom: 0.6rem;
+}
+
+.section-meta-field:last-child {
+  margin-bottom: 0;
+}
+
+.section-meta-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--walnut);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.meta-assignee,
+.meta-directions,
+.meta-link-text,
+.meta-link-url {
+  width: 100%;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--snow);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  outline: none;
+}
+
+.meta-assignee:focus,
+.meta-directions:focus,
+.meta-link-text:focus,
+.meta-link-url:focus {
+  border-color: var(--copper);
+  box-shadow: 0 0 0 2px rgba(181,106,59,0.1);
+}
+
+.meta-directions {
+  min-height: 60px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.meta-link-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.meta-link-text {
+  flex: 1;
+  min-width: 140px;
+}
+
+.meta-link-url {
+  flex: 1.5;
+  min-width: 180px;
+}
+
+.meta-link-rendered {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.meta-link-rendered a {
+  color: var(--copper);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(181,106,59,0.3);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.meta-link-rendered a:hover {
+  color: var(--burn);
+  border-bottom-color: var(--burn);
+}
+
+/* --- Subsections --- */
+.subsection {
+  margin-bottom: 0.75rem;
+}
+
+.subsection h3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--wood-600);
+  margin-bottom: 0.4rem;
+  padding-top: 0.4rem;
+}
+
+/* --- Task Rows --- */
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+}
+
+.task:last-child { border-bottom: none; }
+
+.task.done {
+  background: var(--done-bg);
+  border-radius: 4px;
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.task-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--forest-500);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-text {
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.task.done .task-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.task-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.field-assignee {
+  width: 100px;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+  border: none;
+  border-bottom: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+}
+
+.field-assignee:focus {
+  border-bottom-color: var(--copper);
+}
+
+.link-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.field-link {
+  width: 160px;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+  border: none;
+  border-bottom: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+}
+
+.field-link:focus {
+  border-bottom-color: var(--copper);
+}
+
+.link-out {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--copper);
+  text-decoration: none;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.link-out:hover {
+  background: var(--wood-100);
+  color: var(--burn);
+}
+
+.link-out.visible {
+  display: inline-block;
+}
+
+footer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  font-size: 0.72rem;
+  color: var(--walnut);
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* --- Section Wrapper + Green Top Progress Bar --- */
+.section-wrap {
+  margin-bottom: 0.75rem;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--snow);
+}
+
+.section-top-bar {
+  position: relative;
+  height: 22px;
+  background: var(--wood-100);
+  overflow: hidden;
+}
+
+.section-top-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pine), var(--forest-500));
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0%;
+  border-radius: 0 3px 3px 0;
+}
+
+.section-top-pct {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s;
+  padding: 0 6px;
+}
+
+/* --- Dashboard --- */
+#dashboard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem 0.75rem;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  gap: 0.75rem;
+}
+
+.dash-card {
+  background: var(--snow);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dash-card h3 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--walnut);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.dash-card canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.dash-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  color: var(--walnut);
+}
+
+.dash-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  header { padding: 1.25rem 1rem 0.75rem; }
+  main { padding: 0.5rem 1rem 2rem; }
+  #dashboard { padding: 0 1rem 0.5rem; }
+  .dash-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+  .dash-card canvas { max-width: 260px; }
+  .task { flex-direction: column; align-items: flex-start; gap: 0.3rem; padding: 0.5rem 0; }
+  .task-fields { width: 100%; padding-left: 1.6rem; }
+  .field-assignee { flex: 1; width: auto; }
+  .field-link { flex: 1; width: auto; }
+  .section-bar { display: none; }
+  .section-top-bar { height: 18px; }
+  .section-top-pct { font-size: 0.6rem; }
+  .meta-link-row { flex-direction: column; }
+  .meta-link-text, .meta-link-url { min-width: 0; width: 100%; }
+}
+
+@media (min-width: 641px) and (max-width: 800px) {
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+  .dash-card:nth-child(2) { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Simply Nuts &amp; More &mdash; Task Tracker</h1>
+  <p class="subtitle">Non-development checklist for launch readiness</p>
+  <div class="global-progress">
+    <div class="progress-bar"><div class="progress-fill" id="globalFill"></div></div>
+    <span class="progress-text" id="globalText">0 / 0 done</span>
+  </div>
+  <div class="controls">
+    <select id="filter">
+      <option value="all">All Tasks</option>
+      <option value="incomplete">Incomplete</option>
+      <option value="complete">Completed</option>
+      <option value="has-link">Has Link</option>
+      <option value="no-link">Needs Link</option>
+    </select>
+    <button id="expandAll">Expand All</button>
+    <button id="collapseAll">Collapse All</button>
+    <button id="exportBtn">Export JSON</button>
+  </div>
+</header>
+
+<section id="dashboard">
+  <div class="dash-grid">
+    <div class="dash-card">
+      <h3>Overall Progress</h3>
+      <canvas id="chartOverall" width="180" height="180"></canvas>
+      <div class="dash-legend" id="legendOverall"></div>
+    </div>
+    <div class="dash-card">
+      <h3>Tasks Done by Section</h3>
+      <canvas id="chartSections" width="400" height="180"></canvas>
+    </div>
+    <div class="dash-card">
+      <h3>Completed by Assignee</h3>
+      <canvas id="chartAssignees" width="180" height="180"></canvas>
+      <div class="dash-legend" id="legendAssignees"></div>
+    </div>
+  </div>
+</section>
+
+<main id="sections"></main>
+
+<footer id="footerInfo"></footer>
+
+<script>
+// ============================================================
+// TASK DATA — transcribed from NON_DEV_TASKS.md
+// ============================================================
+const SECTIONS = [
+  {
+    id: "A", title: "A. Physical Measurements & Specs",
+    intro: "The design tool and shipping calculator need exact numbers. Grab a tape measure and a kitchen scale.",
+    subsections: [
+      { title: "Containers \u2014 Exterior Dimensions (L x W x H in inches)", tasks: [
+        { id:"A-0-0", text:"Wooden Box \u2014 Small (1 lb)" },
+        { id:"A-0-1", text:"Wooden Box \u2014 Medium (2 lb)" },
+        { id:"A-0-2", text:"Wooden Box \u2014 Large (4 lb)" },
+        { id:"A-0-3", text:"Bamboo Container \u2014 Small" },
+        { id:"A-0-4", text:"Bamboo Container \u2014 Medium" },
+        { id:"A-0-5", text:"Gift Tin \u2014 Small" },
+        { id:"A-0-6", text:"Gift Tin \u2014 Medium" },
+        { id:"A-0-7", text:"Gift Tin \u2014 Large" },
+      ]},
+      { title: "Containers \u2014 Interior Dimensions", tasks: [
+        { id:"A-1-0", text:"Interior space available for bags/inserts per container + size" },
+        { id:"A-1-1", text:"Gift Tin insert configurations (3-section insert vs single cavity)" },
+      ]},
+      { title: "Laser Engraving Surface Area (critical for the design tool)", tasks: [
+        { id:"A-2-0", text:"Wooden Box lid engravable area (inches) \u2014 all sizes" },
+        { id:"A-2-1", text:"Bamboo Container lid engravable area (inches)" },
+        { id:"A-2-2", text:"Gift Tin lid engravable area (inches)" },
+        { id:"A-2-3", text:"Note any curvature, border insets, or safe zones that reduce usable area" },
+      ]},
+      { title: "Weights (for shipping cost calculation)", tasks: [
+        { id:"A-3-0", text:"Empty weight of each container type + size" },
+        { id:"A-3-1", text:"Packed weight per variant (container + nuts + packaging)" },
+        { id:"A-3-2", text:"Weight of shipping box + packing material per variant" },
+      ]},
+      { title: "Shipping Boxes", tasks: [
+        { id:"A-4-0", text:"Dimensions of each shipping box used (per container size)" },
+        { id:"A-4-1", text:"Confirm which containers share the same shipping box size" },
+      ]},
+      { title: "Epilog Laser Machine Specs", tasks: [
+        { id:"A-5-0", text:"Max bed size (how many containers fit per run)" },
+        { id:"A-5-1", text:"Wooden Box: confirmed 6 per machine per run" },
+        { id:"A-5-2", text:"Time per run by container type (30+ min for wooden \u2014 get exact avg)" },
+        { id:"A-5-3", text:"Bamboo and tin run times" },
+        { id:"A-5-4", text:"Any file format quirks when importing from CorelDRAW" },
+      ]},
+    ]
+  },
+  {
+    id: "B", title: "B. Product Catalog & Inventory",
+    intro: "The website currently has 3 mock products. You need the real full list.",
+    subsections: [
+      { title: "Nuts (list every variety you sell)", tasks: [
+        { id:"B-0-0", text:"Variety name, price per pound, price per half-pound" },
+        { id:"B-0-1", text:"Roasted Almonds / Honey Cinnamon Almonds" },
+        { id:"B-0-2", text:"Jumbo Cashews" },
+        { id:"B-0-3", text:"Butter Toffee Peanuts (Secret Peanuts)" },
+        { id:"B-0-4", text:"Candied Pecans" },
+        { id:"B-0-5", text:"Macadamia Nuts" },
+        { id:"B-0-6", text:"Mixed Nuts varieties" },
+        { id:"B-0-7", text:"Any seasonal-only varieties" },
+      ]},
+      { title: "Chocolates", tasks: [
+        { id:"B-1-0", text:"Each chocolate variety, price per pound / half-pound" },
+        { id:"B-1-1", text:"List all chocolate varieties" },
+      ]},
+      { title: "Mixes / Trail Mixes", tasks: [
+        { id:"B-2-0", text:"Imperial Mix \u2014 price" },
+        { id:"B-2-1", text:"Any other mixes \u2014 prices" },
+        { id:"B-2-2", text:"List all mix varieties" },
+      ]},
+      { title: "Per-Product Details Needed", tasks: [
+        { id:"B-3-0", text:"Allergen info for each product (tree nuts, peanuts, dairy, soy, etc.)" },
+        { id:"B-3-1", text:"Shelf life / best-by window for each product" },
+        { id:"B-3-2", text:"Which products pair with which container types" },
+        { id:"B-3-3", text:"Minimum fill rules (e.g., half-pound minimum per variety)" },
+        { id:"B-3-4", text:"Current stock levels and supplier lead times" },
+      ]},
+    ]
+  },
+  {
+    id: "C", title: "C. Pricing & Business Rules",
+    intro: "The code has placeholder prices. These need to be real.",
+    subsections: [
+      { title: "Container Base Pricing (what you charge the customer)", tasks: [
+        { id:"C-0-0", text:"Wooden Box \u2014 Small / Medium / Large retail price" },
+        { id:"C-0-1", text:"Bamboo Container \u2014 Small / Medium price" },
+        { id:"C-0-2", text:"Gift Tin \u2014 Small / Medium / Large retail price" },
+        { id:"C-0-3", text:"Confirm whether container price includes engraving or if it\u2019s separate" },
+      ]},
+      { title: "Cost Basis (your actual costs \u2014 for margin calculation)", tasks: [
+        { id:"C-1-0", text:"Cost per empty container (each type \u00d7 size)" },
+        { id:"C-1-1", text:"Cost per lb for each nut/chocolate/mix (wholesale)" },
+        { id:"C-1-2", text:"Labor cost per unit for engraving (machine time + handling)" },
+        { id:"C-1-3", text:"Packaging materials per unit (crinkle paper, holiday paper, tape, labels)" },
+        { id:"C-1-4", text:"Shipping box cost per unit" },
+      ]},
+      { title: "Bulk / Corporate Discount Tiers", tasks: [
+        { id:"C-2-0", text:"Pricing at 12\u201324 units" },
+        { id:"C-2-1", text:"Pricing at 25\u201349 units" },
+        { id:"C-2-2", text:"Pricing at 50\u201399 units" },
+        { id:"C-2-3", text:"Pricing at 100+ units" },
+        { id:"C-2-4", text:"At what quantity does free shipping kick in (if ever)?" },
+      ]},
+      { title: "Promotions & Discounts", tasks: [
+        { id:"C-3-0", text:"Early bird discount: confirm 5% off before Nov 1" },
+        { id:"C-3-1", text:"Referral bonus: confirm 5% \u2014 decide minimum order (e.g., $500? 25 units?)" },
+        { id:"C-3-2", text:"Returning customer incentive \u2014 decide what to offer" },
+        { id:"C-3-3", text:"Any Black Friday / Cyber Monday specific pricing?" },
+      ]},
+      { title: "Shipping", tasks: [
+        { id:"C-4-0", text:"FedEx or UPS \u2014 which is primary carrier?" },
+        { id:"C-4-1", text:"Get current rate tables or API credentials for real-time quotes" },
+        { id:"C-4-2", text:"Shipping zones / delivery timeline commitments" },
+        { id:"C-4-3", text:"Expedited shipping options + pricing for last-minute December orders" },
+        { id:"C-4-4", text:"Shipping insurance threshold (at what order value?)" },
+      ]},
+      { title: "Tax", tasks: [
+        { id:"C-5-0", text:"Minnesota sales tax collection requirements" },
+        { id:"C-5-1", text:"Interstate tax nexus \u2014 do you collect sales tax on out-of-state orders?" },
+        { id:"C-5-2", text:"Food item tax exemptions in MN (if any)" },
+      ]},
+    ]
+  },
+  {
+    id: "D", title: "D. Logo & Engraving Specs (for the Upload Tool)",
+    intro: "",
+    subsections: [
+      { title: "Accepted Uploads \u2014 Decide & Document", tasks: [
+        { id:"D-0-0", text:"File types: .SVG, .EPS, .AI (vector \u2014 best quality)" },
+        { id:"D-0-1", text:"File types: .PNG, .PDF (raster \u2014 require high-res, transparent background)" },
+        { id:"D-0-2", text:"Maximum file size (recommend 10MB)" },
+        { id:"D-0-3", text:"Minimum resolution for raster files (recommend 300 DPI)" },
+      ]},
+      { title: "Engraving Constraints", tasks: [
+        { id:"D-1-0", text:"Max engravable area per container type (from Section A above)" },
+        { id:"D-1-1", text:"Text engraving character limit (code says 30\u201340 \u2014 confirm)" },
+        { id:"D-1-2", text:"Fonts available for text-only engraving (or always converted to paths?)" },
+        { id:"D-1-3", text:"Can you do double-sided engraving? (lid + inside?)" },
+      ]},
+      { title: "Design Cleanup Service", tasks: [
+        { id:"D-2-0", text:"Will you charge for design cleanup? If so, how much?" },
+        { id:"D-2-1", text:"Turnaround time for cleanup requests" },
+        { id:"D-2-2", text:"What qualifies as \u201ccleanup\u201d vs \u201credesign\u201d?" },
+      ]},
+      { title: "CorelDRAW / Production Pipeline", tasks: [
+        { id:"D-3-0", text:"What file format does CorelDRAW import best from the web tool?" },
+        { id:"D-3-1", text:"Any DPI/color mode requirements for the laser (e.g., grayscale only?)" },
+        { id:"D-3-2", text:"Does the proof approval happen before or after vectorization?" },
+      ]},
+    ]
+  },
+  {
+    id: "E", title: "E. Brand Assets to Collect or Create",
+    intro: "",
+    subsections: [
+      { title: "Logo & Identity", tasks: [
+        { id:"E-0-0", text:"High-resolution company logo \u2014 vector format (.SVG, .AI, .EPS)" },
+        { id:"E-0-1", text:"Logo in PNG with transparent background (for web)" },
+        { id:"E-0-2", text:"Confirm brand color palette (current code uses: espresso, walnut, copper, pine, ink, snow)" },
+        { id:"E-0-3", text:"Confirm brand typography (current code uses: Manrope)" },
+        { id:"E-0-4", text:"Chippy the Squirrel mascot \u2014 high-res vector + multiple poses if available" },
+      ]},
+      { title: "Product Photography", tasks: [
+        { id:"E-1-0", text:"Each container type photographed (empty, with lid, with engraving)" },
+        { id:"E-1-1", text:"Each nut/chocolate variety photographed (close-up, in scoop/bowl)" },
+        { id:"E-1-2", text:"Assembly process photos (engraving, filling, packing, shipping)" },
+        { id:"E-1-3", text:"Lifestyle shots (gift being received, office setting, holiday table)" },
+        { id:"E-1-4", text:"Before/after of laser engraving (blank lid \u2192 finished product)" },
+      ]},
+      { title: "Video Content (for social media & website)", tasks: [
+        { id:"E-2-0", text:"Laser engraving in action (close-up, satisfying, ASMR-worthy)" },
+        { id:"E-2-1", text:"Time-lapse of full order assembly (engrave \u2192 fill \u2192 pack \u2192 ship)" },
+        { id:"E-2-2", text:"\u201cMeet the family\u201d / behind-the-scenes brand story" },
+        { id:"E-2-3", text:"Unboxing video from customer perspective" },
+      ]},
+    ]
+  },
+  {
+    id: "F", title: "F. Social Media & Online Presence",
+    intro: "",
+    subsections: [
+      { title: "Accounts to Create / Secure", tasks: [
+        { id:"F-0-0", text:"LinkedIn Company Page \u2014 Priority 1 (corporate buyers live here)" },
+        { id:"F-0-1", text:"Instagram Business Account \u2014 Priority 2 (visual product showcase)" },
+        { id:"F-0-2", text:"TikTok Business Account \u2014 Priority 2 (laser ASMR content)" },
+        { id:"F-0-3", text:"Facebook Business Page \u2014 Priority 3 (for running ads)" },
+        { id:"F-0-4", text:"Secure identical handle across all platforms (e.g., @simplynutsandmore)" },
+        { id:"F-0-5", text:"Google Business Profile \u2014 update address, hours, website URL, photos" },
+      ]},
+    ]
+  },
+  {
+    id: "G", title: "G. Social Proof & Trust Elements",
+    intro: "Corporate buyers need confidence before placing a 500-unit order.",
+    subsections: [
+      { title: "", tasks: [
+        { id:"G-0-0", text:"List every recognizable past corporate client you\u2019ve served" },
+        { id:"G-0-1", text:"Contact each to get written permission to use their logo on the website" },
+        { id:"G-0-2", text:"Collect their high-res logos for the \u201cTrusted By\u201d banner" },
+        { id:"G-0-3", text:"Gather 3\u20135 testimonials (about: reliability, engraving quality, freshness, service)" },
+        { id:"G-0-4", text:"Any press coverage, local news features, or articles to reference?" },
+        { id:"G-0-5", text:'Verify \u201c37 years\u201d / \u201cSince 1987\u201d claim for the website badge' },
+        { id:"G-0-6", text:'\u201c500+ Companies Gifted\u201d stat on current prototype \u2014 verify actual number' },
+        { id:"G-0-7", text:'\u201c4.9/5 Corporate Satisfaction\u201d stat \u2014 verify or update' },
+      ]},
+    ]
+  },
+  {
+    id: "H", title: "H. Marketing Copy & Email Automation",
+    intro: "The Klaviyo event sinks are already coded. You need the content and the Klaviyo account.",
+    subsections: [
+      { title: "Email Sequences to Write", tasks: [
+        { id:"H-0-0", text:'Welcome email \u2014 "Welcome to the anti-boring corporate gift club"' },
+        { id:"H-0-1", text:"Abandoned workflow email (1 of 3) \u2014 gentle reminder, 24 hrs after" },
+        { id:"H-0-2", text:"Abandoned workflow email (2 of 3) \u2014 witty nudge, 3 days after" },
+        { id:"H-0-3", text:"Abandoned workflow email (3 of 3) \u2014 last chance + possible incentive, 7 days after" },
+        { id:"H-0-4", text:"Order confirmation email \u2014 logo proof + order summary" },
+        { id:"H-0-5", text:'Proof approved / in production email \u2014 "Your gifts are being crafted"' },
+        { id:"H-0-6", text:"Shipped / tracking email \u2014 with tracking number per recipient" },
+        { id:"H-0-7", text:'Past customer re-engagement \u2014 "Your previous design is pre-loaded"' },
+        { id:"H-0-8", text:"Referral invite email \u2014 shareable link with referral bonus info" },
+      ]},
+      { title: "Seasonal Campaigns", tasks: [
+        { id:"H-1-0", text:"Q3 Early Bird (Aug\u2013Sept) \u2014 5% off for ordering before Nov 1" },
+        { id:"H-1-1", text:'October Reminder \u2014 "Holiday season is coming, beat the rush"' },
+        { id:"H-1-2", text:'Thanksgiving / Black Friday promo \u2014 "Skip the generic fruitcake"' },
+        { id:"H-1-3", text:"Mid-December Panic email \u2014 expedited shipping for procrastinators" },
+        { id:"H-1-4", text:"Post-season Thank You \u2014 wrap-up email with referral ask for next year" },
+      ]},
+      { title: "SEO / Blog Article Topics", tasks: [
+        { id:"H-2-0", text:'"Top 5 Corporate Gifts That Won\u2019t End Up in the Trash"' },
+        { id:"H-2-1", text:'"Why Laser Engraving Leaves a Lasting Impression"' },
+        { id:"H-2-2", text:'"The ROI of Client Appreciation"' },
+        { id:"H-2-3", text:'"Health Benefits of Almonds You Won\u2019t Believe"' },
+        { id:"H-2-4", text:'"Why SMB Gifting Makes a Big Difference"' },
+        { id:"H-2-5", text:'"Customized Gifts Create a Rewarding Psychological Reaction"' },
+        { id:"H-2-6", text:'"How to Order Corporate Holiday Gifts Without the Email Chaos"' },
+        { id:"H-2-7", text:"Add 3\u20135 more topics" },
+      ]},
+    ]
+  },
+  {
+    id: "I", title: "I. Legal & Compliance",
+    intro: "",
+    subsections: [
+      { title: "", tasks: [
+        { id:"I-0-0", text:"Terms of Service for the website (custom order terms, cancellation policy)" },
+        { id:"I-0-1", text:"Privacy Policy (email collection, Klaviyo tracking, cookies)" },
+        { id:"I-0-2", text:"Return/Refund Policy for corporate orders (custom products \u2014 what\u2019s returnable?)" },
+        { id:"I-0-3", text:"Food handling compliance \u2014 MN regulations for shipping food items interstate" },
+        { id:"I-0-4", text:"Labeling requirements \u2014 do shipped food items need ingredient/allergen labels?" },
+        { id:"I-0-5", text:"Business license \u2014 verify current license covers online/interstate sales" },
+        { id:"I-0-6", text:"Shipping insurance \u2014 at what order value do you automatically insure?" },
+        { id:"I-0-7", text:"ADA compliance \u2014 website accessibility basics (alt text, contrast, keyboard nav)" },
+      ]},
+    ]
+  },
+  {
+    id: "J", title: "J. Accounts & Integrations to Set Up",
+    intro: "",
+    subsections: [
+      { title: "Payment Processing", tasks: [
+        { id:"J-0-0", text:"Shopify Payments or Stripe account \u2014 set up and verify" },
+        { id:"J-0-1", text:"Test transaction to confirm funds flow" },
+        { id:"J-0-2", text:"Configure tax collection in payment processor" },
+      ]},
+      { title: "Email Marketing", tasks: [
+        { id:"J-1-0", text:"Create Klaviyo account" },
+        { id:"J-1-1", text:"Set up Klaviyo API key (the code already has the sink ready)" },
+        { id:"J-1-2", text:"Import past customer email list into Klaviyo" },
+        { id:"J-1-3", text:"Set up email templates matching brand style" },
+        { id:"J-1-4", text:"Configure event-triggered flows (draft_created, email_captured, design_asset_uploaded, order_submitted, etc.)" },
+      ]},
+      { title: "Shipping", tasks: [
+        { id:"J-2-0", text:"FedEx and/or UPS business account" },
+        { id:"J-2-1", text:"Get API credentials for real-time rate quotes" },
+        { id:"J-2-2", text:"Set up label printing workflow (or confirm existing process)" },
+        { id:"J-2-3", text:"Confirm daily pickup schedule with carrier" },
+      ]},
+      { title: "Analytics", tasks: [
+        { id:"J-3-0", text:"Google Analytics 4 \u2014 set up property + tracking code" },
+        { id:"J-3-1", text:"Set up conversion goals (completed order, email captured, design uploaded)" },
+        { id:"J-3-2", text:"Facebook Pixel (if running FB/IG ads)" },
+        { id:"J-3-3", text:"LinkedIn Insight Tag (if running LinkedIn ads)" },
+      ]},
+      { title: "Domain & Hosting", tasks: [
+        { id:"J-4-0", text:"Confirm domain strategy: keep simplynutsandmore.com? New domain?" },
+        { id:"J-4-1", text:"DNS configuration for new hosting (Shopify/Hydrogen deployment)" },
+        { id:"J-4-2", text:"SSL certificate (automatic with most hosts)" },
+        { id:"J-4-3", text:"Email forwarding / business email setup (info@, orders@)" },
+      ]},
+    ]
+  },
+  {
+    id: "K", title: "K. Operational Readiness",
+    intro: "The website is one thing. Actually fulfilling orders is another.",
+    subsections: [
+      { title: "Past Customer Data", tasks: [
+        { id:"K-0-0", text:"Export all past corporate client data (names, emails, companies, previous orders)" },
+        { id:"K-0-1", text:"Clean up and format for Klaviyo import" },
+        { id:"K-0-2", text:"Identify top 20 clients for personal re-engagement outreach" },
+        { id:"K-0-3", text:"Recover/recreate previous logo designs for pre-loading into the new tool" },
+      ]},
+      { title: "Employee Training", tasks: [
+        { id:"K-1-0", text:"Train staff on how orders will come in from the new website" },
+        { id:"K-1-1", text:"Document the new workflow: order received \u2192 proof approval \u2192 production \u2192 ship" },
+        { id:"K-1-2", text:"Set up internal notification system (email/Slack) for new orders" },
+      ]},
+      { title: "Production Capacity Planning", tasks: [
+        { id:"K-2-0", text:"Max orders per day with 2 Epilog machines running simultaneously" },
+        { id:"K-2-1", text:"Bottleneck analysis: engraving (6 lids \u00d7 30+ min) vs assembly vs shipping" },
+        { id:"K-2-2", text:"Plan for scaling during peak November\u2013December rush" },
+        { id:"K-2-3", text:"Backup plan if a machine goes down" },
+      ]},
+      { title: "Quality Control", tasks: [
+        { id:"K-3-0", text:"Engraving quality check process (before assembly)" },
+        { id:"K-3-1", text:"Correct nut/chocolate selection verification" },
+        { id:"K-3-2", text:"Final inspection before boxing and shipping" },
+        { id:"K-3-3", text:"Photo documentation of finished orders (for disputes + social proof)" },
+      ]},
+      { title: "Launch Timeline", tasks: [
+        { id:"K-4-0", text:"Target launch date" },
+        { id:"K-4-1", text:"Marketing soft launch (email past customers)" },
+        { id:"K-4-2", text:"Social media content start date" },
+        { id:"K-4-3", text:"Early bird promotion start" },
+        { id:"K-4-4", text:"Hard deadline for accepting holiday orders" },
+        { id:"K-4-5", text:"Last shipping date for holiday delivery" },
+      ]},
+    ]
+  },
+];
+
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+const STORAGE_KEY = "snm-task-tracker";
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { version: 1, tasks: {}, collapsed: {}, notes: {}, sectionMeta: {} };
+}
+
+function saveState() {
+  state.lastModified = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function getTask(id) {
+  return state.tasks[id] || { done: false, link: "", assignee: "" };
+}
+
+function setTask(id, updates) {
+  if (!state.tasks[id]) state.tasks[id] = { done: false, link: "", assignee: "" };
+  Object.assign(state.tasks[id], updates);
+  saveState();
+}
+
+function getNote(sectionId) {
+  if (!state.notes) state.notes = {};
+  return state.notes[sectionId] || "";
+}
+
+function setNote(sectionId, text) {
+  if (!state.notes) state.notes = {};
+  state.notes[sectionId] = text;
+  saveState();
+}
+
+function getSectionMeta(sectionId) {
+  if (!state.sectionMeta) state.sectionMeta = {};
+  return state.sectionMeta[sectionId] || { directions: "", docLink: "", docLinkText: "", assignee: "", open: false };
+}
+
+function setSectionMeta(sectionId, updates) {
+  if (!state.sectionMeta) state.sectionMeta = {};
+  if (!state.sectionMeta[sectionId]) state.sectionMeta[sectionId] = { directions: "", docLink: "", docLinkText: "", assignee: "", open: false };
+  Object.assign(state.sectionMeta[sectionId], updates);
+  saveState();
+}
+
+// ============================================================
+// COUNTING
+// ============================================================
+function countAll() {
+  let total = 0, done = 0;
+  SECTIONS.forEach(s => s.subsections.forEach(sub => sub.tasks.forEach(t => {
+    total++;
+    if (getTask(t.id).done) done++;
+  })));
+  return { total, done };
+}
+
+function countSection(sectionId) {
+  const sec = SECTIONS.find(s => s.id === sectionId);
+  if (!sec) return { total: 0, done: 0 };
+  let total = 0, done = 0;
+  sec.subsections.forEach(sub => sub.tasks.forEach(t => {
+    total++;
+    if (getTask(t.id).done) done++;
+  }));
+  return { total, done };
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderAll() {
+  const container = document.getElementById("sections");
+  container.innerHTML = SECTIONS.map(renderSection).join("");
+  updateAllProgress();
+  restoreCollapse();
+}
+
+function renderSection(section) {
+  const isOpen = !state.collapsed[section.id];
+  const meta = getSectionMeta(section.id);
+  const hasMetaLink = meta.docLink && meta.docLink.trim() && meta.docLinkText && meta.docLinkText.trim();
+  return `
+    <div class="section-wrap" data-wrap="${section.id}">
+      <div class="section-top-bar">
+        <div class="section-top-fill" data-topfill="${section.id}"></div>
+        <span class="section-top-pct" data-toppct="${section.id}">0%</span>
+      </div>
+      <details class="section" data-section="${section.id}" ${isOpen ? "open" : ""}>
+        <summary>
+          <button class="section-meta-toggle ${meta.open ? "open" : ""}" data-meta-toggle="${section.id}" title="Section directions &amp; details">+</button>
+          <span class="section-arrow"></span>
+          <span class="section-title">${section.title}</span>
+          <span class="section-progress" data-progress="${section.id}"></span>
+          <div class="section-bar"><div class="section-bar-fill" data-bar="${section.id}"></div></div>
+        </summary>
+        <div class="section-body">
+          <div class="section-meta ${meta.open ? "visible" : ""}" data-meta="${section.id}">
+            <div class="section-meta-field">
+              <label>Section Assignee</label>
+              <input type="text" class="meta-assignee" data-meta-assignee="${section.id}" placeholder="Assign someone to this entire section\u2026" value="${escHtml(meta.assignee)}" />
+            </div>
+            <div class="section-meta-field">
+              <label>Directions</label>
+              <textarea class="meta-directions" data-meta-directions="${section.id}" placeholder="Add directions or instructions for this section\u2026">${escHtml(meta.directions)}</textarea>
+            </div>
+            <div class="section-meta-field">
+              <label>Section Document</label>
+              <div class="meta-link-row">
+                <input type="text" class="meta-link-text" data-meta-link-text="${section.id}" placeholder="Display text (e.g. Project Brief)" value="${escHtml(meta.docLinkText)}" />
+                <input type="url" class="meta-link-url" data-meta-link-url="${section.id}" placeholder="Paste document URL\u2026" value="${escHtml(meta.docLink)}" />
+              </div>
+              ${hasMetaLink ? `<div class="meta-link-rendered"><a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a></div>` : ""}
+            </div>
+          </div>
+          ${section.intro ? `<p class="section-intro">${section.intro}</p>` : ""}
+          ${section.subsections.map(sub => renderSubsection(sub)).join("")}
+          <div class="section-notes-wrap">
+            <div class="section-notes-label">Notes &amp; Additional Info</div>
+            <textarea class="section-notes" data-notes="${section.id}" placeholder="Add notes, reminders, or essential details for this section\u2026">${escHtml(getNote(section.id))}</textarea>
+          </div>
+        </div>
+      </details>
+    </div>`;
+}
+
+function renderSubsection(sub) {
+  return `
+    <div class="subsection">
+      ${sub.title ? `<h3>${sub.title}</h3>` : ""}
+      <div class="task-list">
+        ${sub.tasks.map(t => renderTask(t)).join("")}
+      </div>
+    </div>`;
+}
+
+function renderTask(t) {
+  const s = getTask(t.id);
+  const hasLink = s.link && s.link.trim().length > 0;
+  return `
+    <div class="task ${s.done ? "done" : ""}" data-id="${t.id}">
+      <label class="task-check">
+        <input type="checkbox" ${s.done ? "checked" : ""} />
+        <span class="task-text">${t.text}</span>
+      </label>
+      <div class="task-fields">
+        <input type="text" class="field-assignee" placeholder="Assignee" value="${escHtml(s.assignee)}" />
+        <div class="link-group">
+          <input type="url" class="field-link" placeholder="Paste link\u2026" value="${escHtml(s.link)}" />
+          <a class="link-out ${hasLink ? "visible" : ""}" href="${hasLink ? escHtml(s.link) : "#"}" target="_blank" rel="noopener" title="Open link">\u2197</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ============================================================
+// PROGRESS UPDATES
+// ============================================================
+function updateAllProgress() {
+  const g = countAll();
+  document.getElementById("globalFill").style.width = g.total ? (g.done/g.total*100)+"%":"0%";
+  document.getElementById("globalText").textContent = `${g.done} / ${g.total} done`;
+
+  SECTIONS.forEach(sec => {
+    const c = countSection(sec.id);
+    const pct = c.total ? Math.round(c.done/c.total*100) : 0;
+    const progEl = document.querySelector(`[data-progress="${sec.id}"]`);
+    const barEl = document.querySelector(`[data-bar="${sec.id}"]`);
+    if (progEl) progEl.textContent = `${c.done} / ${c.total}`;
+    if (barEl) barEl.style.width = c.total ? pct+"%":"0%";
+
+    // Green top bar
+    const topFill = document.querySelector(`[data-topfill="${sec.id}"]`);
+    const topPct = document.querySelector(`[data-toppct="${sec.id}"]`);
+    if (topFill) topFill.style.width = pct + "%";
+    if (topPct) {
+      topPct.textContent = pct + "%";
+      // Position % label at right edge of fill, but clamp to stay visible
+      if (pct < 12) {
+        topPct.style.left = pct + "%";
+        topPct.style.color = "var(--pine)";
+      } else {
+        topPct.style.left = (pct - 1) + "%";
+        topPct.style.color = "#fff";
+        topPct.style.textAlign = "right";
+        topPct.style.transform = "translateX(-100%) translateY(-50%)";
+      }
+      if (pct === 0) {
+        topPct.style.left = "4px";
+        topPct.style.transform = "translateY(-50%)";
+        topPct.style.color = "var(--wood-200)";
+      }
+    }
+  });
+
+  updateDashboard();
+  updateFooter();
+}
+
+function updateFooter() {
+  const foot = document.getElementById("footerInfo");
+  const bytes = new Blob([localStorage.getItem(STORAGE_KEY)||""]).size;
+  const kb = (bytes/1024).toFixed(1);
+  const mod = state.lastModified ? new Date(state.lastModified).toLocaleString() : "never";
+  foot.textContent = `Last saved: ${mod} \u00b7 Storage: ${kb} KB`;
+}
+
+// ============================================================
+// COLLAPSE STATE
+// ============================================================
+function restoreCollapse() {
+  document.querySelectorAll("details.section").forEach(el => {
+    const sid = el.dataset.section;
+    if (state.collapsed[sid]) el.removeAttribute("open");
+    else el.setAttribute("open","");
+  });
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+const debouncers = {};
+function debounce(key, fn, ms) {
+  clearTimeout(debouncers[key]);
+  debouncers[key] = setTimeout(fn, ms);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderAll();
+
+  const main = document.getElementById("sections");
+
+  // Checkbox changes
+  main.addEventListener("change", (e) => {
+    if (e.target.type !== "checkbox") return;
+    const row = e.target.closest(".task");
+    if (!row) return;
+    const id = row.dataset.id;
+    const checked = e.target.checked;
+    setTask(id, { done: checked });
+    row.classList.toggle("done", checked);
+    row.querySelector(".task-text").style.textDecoration = checked ? "line-through" : "none";
+    row.querySelector(".task-text").style.opacity = checked ? "0.5" : "1";
+    updateAllProgress();
+  });
+
+  // Section meta toggle ("+" button) — must prevent <details> from toggling
+  main.addEventListener("click", (e) => {
+    const btn = e.target.closest(".section-meta-toggle");
+    if (!btn) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const sid = btn.dataset.metaToggle;
+    const panel = main.querySelector(`.section-meta[data-meta="${sid}"]`);
+    const isOpen = panel.classList.toggle("visible");
+    btn.classList.toggle("open", isOpen);
+    setSectionMeta(sid, { open: isOpen });
+  });
+
+  // Section meta fields (debounced) + Section notes (debounced) + task fields
+  main.addEventListener("input", (e) => {
+    // Section notes
+    if (e.target.classList.contains("section-notes")) {
+      const sid = e.target.dataset.notes;
+      debounce("note-"+sid, () => setNote(sid, e.target.value), 300);
+      return;
+    }
+
+    // Section meta: assignee
+    if (e.target.classList.contains("meta-assignee")) {
+      const sid = e.target.dataset.metaAssignee;
+      debounce("meta-assignee-"+sid, () => setSectionMeta(sid, { assignee: e.target.value.trim() }), 300);
+      return;
+    }
+
+    // Section meta: directions
+    if (e.target.classList.contains("meta-directions")) {
+      const sid = e.target.dataset.metaDirections;
+      debounce("meta-dir-"+sid, () => setSectionMeta(sid, { directions: e.target.value }), 300);
+      return;
+    }
+
+    // Section meta: doc link text
+    if (e.target.classList.contains("meta-link-text")) {
+      const sid = e.target.dataset.metaLinkText;
+      debounce("meta-lt-"+sid, () => {
+        setSectionMeta(sid, { docLinkText: e.target.value.trim() });
+        updateMetaLinkPreview(sid);
+      }, 300);
+      return;
+    }
+
+    // Section meta: doc link URL
+    if (e.target.classList.contains("meta-link-url")) {
+      const sid = e.target.dataset.metaLinkUrl;
+      debounce("meta-lu-"+sid, () => {
+        setSectionMeta(sid, { docLink: e.target.value.trim() });
+        updateMetaLinkPreview(sid);
+      }, 300);
+      return;
+    }
+
+    const row = e.target.closest(".task");
+    if (!row) return;
+    const id = row.dataset.id;
+
+    if (e.target.classList.contains("field-assignee")) {
+      debounce("assign-"+id, () => setTask(id, { assignee: e.target.value.trim() }), 300);
+    }
+    if (e.target.classList.contains("field-link")) {
+      debounce("link-"+id, () => {
+        const val = e.target.value.trim();
+        setTask(id, { link: val });
+        const icon = row.querySelector(".link-out");
+        if (val) {
+          icon.classList.add("visible");
+          icon.href = val;
+        } else {
+          icon.classList.remove("visible");
+          icon.href = "#";
+        }
+      }, 300);
+    }
+  });
+
+  // Collapse persistence (toggle doesn't bubble — use capture)
+  main.addEventListener("toggle", (e) => {
+    if (e.target.tagName === "DETAILS") {
+      const sid = e.target.dataset.section;
+      state.collapsed[sid] = !e.target.open;
+      saveState();
+    }
+  }, true);
+
+  // Filter
+  document.getElementById("filter").addEventListener("change", (e) => {
+    applyFilter(e.target.value);
+  });
+
+  // Expand/Collapse All
+  document.getElementById("expandAll").addEventListener("click", () => {
+    document.querySelectorAll("details.section").forEach(el => { el.open = true; });
+    SECTIONS.forEach(s => { state.collapsed[s.id] = false; });
+    saveState();
+  });
+  document.getElementById("collapseAll").addEventListener("click", () => {
+    document.querySelectorAll("details.section").forEach(el => { el.open = false; });
+    SECTIONS.forEach(s => { state.collapsed[s.id] = true; });
+    saveState();
+  });
+
+  // Export
+  document.getElementById("exportBtn").addEventListener("click", exportJSON);
+});
+
+// ============================================================
+// DASHBOARD CHARTS
+// ============================================================
+const CHART_COLORS = [
+  "#3e5f43","#b56a3b","#6e4023","#3d8b3d","#c45e20",
+  "#5b8a72","#d4956b","#8b5529","#2d6b2d","#e8c9a0",
+  "#7db892","#a0522d","#4a7c59","#cc7744","#556b2f"
+];
+
+function hiDpiCanvas(canvas, w, h) {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+function drawPieChart(canvasId, legendId, slices) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const size = 180;
+  const ctx = hiDpiCanvas(canvas, size, size);
+  const cx = size / 2, cy = size / 2, r = 70;
+  const total = slices.reduce((a, s) => a + s.value, 0);
+
+  ctx.clearRect(0, 0, size, size);
+
+  if (total === 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = "#e8d9c7";
+    ctx.fill();
+    ctx.fillStyle = "#6e4023";
+    ctx.font = "600 11px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("No data", cx, cy);
+
+    const legend = document.getElementById(legendId);
+    if (legend) legend.innerHTML = "";
+    return;
+  }
+
+  let startAngle = -Math.PI / 2;
+  slices.forEach((slice, i) => {
+    if (slice.value === 0) return;
+    const sliceAngle = (slice.value / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
+    ctx.closePath();
+    ctx.fillStyle = slice.color || CHART_COLORS[i % CHART_COLORS.length];
+    ctx.fill();
+
+    // Label inside slice if big enough
+    if (slice.value / total > 0.08) {
+      const midAngle = startAngle + sliceAngle / 2;
+      const lx = cx + Math.cos(midAngle) * (r * 0.6);
+      const ly = cy + Math.sin(midAngle) * (r * 0.6);
+      const pctVal = Math.round(slice.value / total * 100);
+      ctx.fillStyle = "#fff";
+      ctx.font = "700 11px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(pctVal + "%", lx, ly);
+    }
+
+    startAngle += sliceAngle;
+  });
+
+  // Center hole for donut effect
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.42, 0, Math.PI * 2);
+  ctx.fillStyle = "#fffdfa";
+  ctx.fill();
+
+  // Center text
+  const donePct = total > 0 ? slices[0].value : 0;
+  ctx.fillStyle = "#24160f";
+  ctx.font = "700 18px -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  if (canvasId === "chartOverall") {
+    const g = countAll();
+    const oPct = g.total ? Math.round(g.done / g.total * 100) : 0;
+    ctx.fillText(oPct + "%", cx, cy - 4);
+    ctx.font = "500 9px -apple-system, sans-serif";
+    ctx.fillStyle = "#6e4023";
+    ctx.fillText("complete", cx, cy + 12);
+  }
+
+  // Legend
+  const legend = document.getElementById(legendId);
+  if (legend) {
+    legend.innerHTML = slices
+      .filter(s => s.value > 0)
+      .map((s, i) => `<span class="dash-legend-item"><span class="dash-legend-swatch" style="background:${s.color || CHART_COLORS[i % CHART_COLORS.length]}"></span>${s.label} (${s.value})</span>`)
+      .join("");
+  }
+}
+
+function drawBarChart(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const w = 400, h = 180;
+  const ctx = hiDpiCanvas(canvas, w, h);
+  ctx.clearRect(0, 0, w, h);
+
+  const padL = 28, padR = 10, padT = 10, padB = 30;
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+  const barGap = 4;
+  const barW = Math.floor((chartW - barGap * (SECTIONS.length - 1)) / SECTIONS.length);
+
+  // Get max
+  let maxVal = 0;
+  const data = SECTIONS.map(sec => {
+    const c = countSection(sec.id);
+    if (c.total > maxVal) maxVal = c.total;
+    return c;
+  });
+  if (maxVal === 0) maxVal = 1;
+
+  // Y-axis gridlines
+  ctx.strokeStyle = "#e8d9c7";
+  ctx.lineWidth = 0.5;
+  ctx.fillStyle = "#6e4023";
+  ctx.font = "500 9px -apple-system, sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + chartH - (i / 4) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    ctx.fillText(Math.round(maxVal * i / 4), padL - 4, y);
+  }
+
+  // Bars
+  SECTIONS.forEach((sec, i) => {
+    const c = data[i];
+    const x = padL + i * (barW + barGap);
+    const totalH = c.total ? (c.total / maxVal) * chartH : 0;
+    const doneH = c.total ? (c.done / maxVal) * chartH : 0;
+
+    // Total bar (background)
+    ctx.fillStyle = "#e8d9c7";
+    ctx.beginPath();
+    ctx.roundRect(x, padT + chartH - totalH, barW, totalH, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // Done bar (foreground)
+    if (c.done > 0) {
+      ctx.fillStyle = CHART_COLORS[i % CHART_COLORS.length];
+      ctx.beginPath();
+      ctx.roundRect(x, padT + chartH - doneH, barW, doneH, [3, 3, 0, 0]);
+      ctx.fill();
+    }
+
+    // Done count on top of bar
+    if (c.done > 0) {
+      ctx.fillStyle = "#24160f";
+      ctx.font = "700 8px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(c.done, x + barW / 2, padT + chartH - doneH - 2);
+    }
+
+    // Label below
+    ctx.fillStyle = "#6e4023";
+    ctx.font = "600 9px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(sec.id, x + barW / 2, padT + chartH + 6);
+
+    // Total below label
+    ctx.font = "400 7px -apple-system, sans-serif";
+    ctx.fillStyle = "#b56a3b";
+    ctx.fillText("/" + c.total, x + barW / 2, padT + chartH + 18);
+  });
+}
+
+function collectAssigneeStats() {
+  const map = {};
+  SECTIONS.forEach(sec => sec.subsections.forEach(sub => sub.tasks.forEach(t => {
+    const s = getTask(t.id);
+    if (s.done && s.assignee && s.assignee.trim()) {
+      const name = s.assignee.trim();
+      map[name] = (map[name] || 0) + 1;
+    }
+  })));
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({
+      label,
+      value,
+      color: CHART_COLORS[i % CHART_COLORS.length]
+    }));
+}
+
+function updateDashboard() {
+  const g = countAll();
+
+  // Pie 1: Overall finished vs unfinished
+  drawPieChart("chartOverall", "legendOverall", [
+    { label: "Finished", value: g.done, color: "#3d8b3d" },
+    { label: "Remaining", value: g.total - g.done, color: "#f5e6d0" }
+  ]);
+
+  // Bar chart: per-section
+  drawBarChart("chartSections");
+
+  // Pie 2: Assignees
+  const assigneeSlices = collectAssigneeStats();
+  if (assigneeSlices.length === 0) {
+    // Show empty state
+    drawPieChart("chartAssignees", "legendAssignees", [
+      { label: "Unassigned", value: 1, color: "#e8d9c7" }
+    ]);
+  } else {
+    drawPieChart("chartAssignees", "legendAssignees", assigneeSlices);
+  }
+}
+
+// ============================================================
+// META LINK PREVIEW
+// ============================================================
+function updateMetaLinkPreview(sid) {
+  const meta = getSectionMeta(sid);
+  const panel = document.querySelector(`.section-meta[data-meta="${sid}"]`);
+  if (!panel) return;
+  const existing = panel.querySelector(".meta-link-rendered");
+  if (meta.docLink && meta.docLink.trim() && meta.docLinkText && meta.docLinkText.trim()) {
+    if (existing) {
+      existing.innerHTML = `<a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a>`;
+    } else {
+      const div = document.createElement("div");
+      div.className = "meta-link-rendered";
+      div.innerHTML = `<a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a>`;
+      const linkField = panel.querySelectorAll(".section-meta-field")[2];
+      if (linkField) linkField.appendChild(div);
+    }
+  } else if (existing) {
+    existing.remove();
+  }
+}
+
+// ============================================================
+// FILTER
+// ============================================================
+function applyFilter(value) {
+  document.querySelectorAll(".task").forEach(row => {
+    const id = row.dataset.id;
+    const s = getTask(id);
+    let show = true;
+    if (value === "incomplete") show = !s.done;
+    if (value === "complete") show = s.done;
+    if (value === "has-link") show = !!(s.link && s.link.trim());
+    if (value === "no-link") show = !(s.link && s.link.trim());
+    row.style.display = show ? "" : "none";
+  });
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `snm-tasks-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
