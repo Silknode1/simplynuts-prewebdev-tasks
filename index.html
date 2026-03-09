@@ -616,7 +616,31 @@ footer {
   .dash-grid { grid-template-columns: 1fr 1fr; }
   .dash-card:nth-child(2) { grid-column: 1 / -1; }
 }
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--walnut);
+  padding: 3px 10px;
+  background: var(--snow);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+}
+.sync-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #999;
+  flex-shrink: 0;
+}
+.sync-dot.connected { background: #3d8b3d; }
+.sync-dot.syncing { background: #e8a83e; animation: syncPulse 1s infinite; }
+.sync-dot.error { background: #c45e20; }
+.sync-dot.offline { background: #999; }
+@keyframes syncPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 </style>
+<script src="https://www.gstatic.com/firebasejs/12.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.10.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -638,6 +662,9 @@ footer {
     <button id="expandAll">Expand All</button>
     <button id="collapseAll">Collapse All</button>
     <button id="exportBtn">Export JSON</button>
+    <button id="importBtn">Import JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <span class="sync-badge"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">Local only</span></span>
   </div>
 </header>
 
@@ -1014,6 +1041,13 @@ function loadState() {
 function saveState() {
   state.lastModified = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Push to Firebase if connected
+  if (fbReady && fbDb) {
+    updateSyncDot("syncing");
+    fbDb.set(state)
+      .then(() => updateSyncDot("connected"))
+      .catch(() => updateSyncDot("error"));
+  }
 }
 
 function getTask(id) {
@@ -1047,6 +1081,75 @@ function setSectionMeta(sectionId, updates) {
   if (!state.sectionMeta[sectionId]) state.sectionMeta[sectionId] = { directions: "", docLink: "", docLinkText: "", assignee: "", open: false };
   Object.assign(state.sectionMeta[sectionId], updates);
   saveState();
+}
+
+// ============================================================
+// FIREBASE SYNC
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB0-Tlq2Fl_MElU8bAFq6q0REj0dSZlfC4",
+  authDomain: "simply-nuts-task-tracker.firebaseapp.com",
+  databaseURL: "https://simply-nuts-task-tracker-default-rtdb.firebaseio.com",
+  projectId: "simply-nuts-task-tracker",
+  storageBucket: "simply-nuts-task-tracker.firebasestorage.app",
+  messagingSenderId: "606880758461",
+  appId: "1:606880758461:web:205f28b94a572a62c095d4"
+};
+let fbDb = null;
+let fbReady = false;
+
+function updateSyncDot(status) {
+  const dot = document.getElementById("syncDot");
+  const txt = document.getElementById("syncText");
+  if (!dot || !txt) return;
+  dot.className = "sync-dot " + status;
+  const labels = { connected: "Synced", syncing: "Syncing\u2026", error: "Sync error", offline: "Local only" };
+  txt.textContent = labels[status] || status;
+}
+
+function initFirebase() {
+  if (typeof firebase === "undefined") { updateSyncDot("offline"); return; }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDb = firebase.database().ref("tracker");
+    updateSyncDot("syncing");
+
+    // Listen for remote changes — fires once on connect, then on every update
+    fbDb.on("value", snap => {
+      const remote = snap.val();
+      if (!remote) {
+        // First device ever — push local state to cloud
+        fbDb.set(state);
+        fbReady = true;
+        updateSyncDot("connected");
+        return;
+      }
+      // Ensure all keys exist (backwards compat)
+      remote.tasks = remote.tasks || {};
+      remote.collapsed = remote.collapsed || {};
+      remote.notes = remote.notes || {};
+      remote.sectionMeta = remote.sectionMeta || {};
+      if (!remote.version) remote.version = 1;
+
+      // Accept remote data only if it's strictly newer than ours
+      if (!state.lastModified || (remote.lastModified && remote.lastModified > state.lastModified)) {
+        state = remote;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderAll();
+        updateAllProgress();
+      }
+      fbReady = true;
+      updateSyncDot("connected");
+    });
+
+    // Monitor connection state
+    firebase.database().ref(".info/connected").on("value", snap => {
+      if (fbReady) updateSyncDot(snap.val() ? "connected" : "offline");
+    });
+  } catch(e) {
+    console.warn("Firebase sync unavailable:", e);
+    updateSyncDot("offline");
+  }
 }
 
 // ============================================================
@@ -1360,8 +1463,18 @@ document.addEventListener("DOMContentLoaded", () => {
     saveState();
   });
 
-  // Export
+  // Export / Import
   document.getElementById("exportBtn").addEventListener("click", exportJSON);
+  document.getElementById("importBtn").addEventListener("click", () => {
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", (e) => {
+    if (e.target.files[0]) importJSON(e.target.files[0]);
+    e.target.value = "";  // reset so same file can be re-imported
+  });
+
+  // Start Firebase sync
+  initFirebase();
 });
 
 // ============================================================
@@ -1632,8 +1745,31 @@ function applyFilter(value) {
 }
 
 // ============================================================
-// EXPORT
+// IMPORT / EXPORT
 // ============================================================
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.tasks) throw new Error("Invalid format — no tasks found");
+      imported.version = imported.version || 1;
+      imported.collapsed = imported.collapsed || {};
+      imported.notes = imported.notes || {};
+      imported.sectionMeta = imported.sectionMeta || {};
+      imported.lastModified = new Date().toISOString();
+      state = imported;
+      saveState();
+      renderAll();
+      updateAllProgress();
+      alert("Import successful! " + Object.keys(state.tasks).length + " task states loaded.");
+    } catch(err) {
+      alert("Import failed: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
 function exportJSON() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
