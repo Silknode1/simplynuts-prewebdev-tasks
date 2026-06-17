@@ -639,8 +639,7 @@ footer {
 .sync-dot.offline { background: #999; }
 @keyframes syncPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 </style>
-<script src="https://www.gstatic.com/firebasejs/12.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.10.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -659,6 +658,9 @@ footer {
       <option value="has-link">Has Link</option>
       <option value="no-link">Needs Link</option>
     </select>
+    <select id="assigneeFilter" title="Filter by who's assigned">
+      <option value="all">Everyone</option>
+    </select>
     <button id="expandAll">Expand All</button>
     <button id="collapseAll">Collapse All</button>
     <button id="exportBtn">Export JSON</button>
@@ -667,6 +669,32 @@ footer {
     <span class="sync-badge"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">Local only</span></span>
   </div>
 </header>
+
+<div class="info-bars">
+  <div class="resource-bar">
+    <span class="ib-label">Start here</span>
+    <a href="https://docs.google.com/document/d/13R01ro_RY2BgjfuXMevopV4_kZxvLOe9LidvvHA98H8/edit" target="_blank" rel="noopener">&#128214; Guide</a>
+    <a href="https://notebooklm.google.com/notebook/70b84d52-a98c-4371-a304-6b86b95fea26" target="_blank" rel="noopener">&#127911; Ask NotebookLM</a>
+    <a href="https://drive.google.com/drive/folders/13VT7Zrns90LNYbx3fJH8UPj4uSoRIvaM" target="_blank" rel="noopener">&#128193; Drive</a>
+    <a href="https://www.simplynutsandmore.com" target="_blank" rel="noopener">&#127760; Live site</a>
+  </div>
+  <div id="milestoneStrip" class="milestone-strip"></div>
+</div>
+<style>
+.info-bars{max-width:900px;margin:.75rem auto 0;padding:0 1.5rem;display:flex;flex-direction:column;gap:.5rem;}
+.resource-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;background:var(--snow);border:1px solid var(--card-border);border-radius:8px;padding:.5rem .65rem;}
+.resource-bar .ib-label{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--walnut);margin-right:.25rem;}
+.resource-bar a{font-size:.8rem;text-decoration:none;color:var(--espresso);background:var(--wood-100);border:1px solid var(--card-border);border-radius:999px;padding:.28rem .7rem;font-weight:600;}
+.resource-bar a:hover{background:var(--wood-200);}
+.milestone-strip{display:flex;flex-wrap:wrap;gap:.4rem;}
+.ms-chip{display:flex;flex-direction:column;gap:1px;background:var(--snow);border:1px solid var(--card-border);border-left:3px solid var(--copper);border-radius:6px;padding:.35rem .6rem;min-width:118px;}
+.ms-chip .ms-name{font-size:.72rem;font-weight:700;color:var(--espresso);}
+.ms-chip .ms-date{font-size:.68rem;color:var(--walnut);}
+.ms-chip .ms-left{font-size:.7rem;font-weight:700;}
+.ms-chip.soon{border-left-color:var(--burn);}
+.ms-chip.past{opacity:.55;border-left-color:var(--pine);}
+@media(max-width:560px){.ms-chip{flex:1 1 100%;}}
+</style>
 
 <section id="dashboard">
   <div class="dash-grid">
@@ -1041,12 +1069,10 @@ function loadState() {
 function saveState() {
   state.lastModified = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  // Push to Firebase if connected
-  if (fbReady && fbDb) {
+  // Push to Supabase if connected
+  if (fbReady && sb) {
     updateSyncDot("syncing");
-    fbDb.set(state)
-      .then(() => updateSyncDot("connected"))
-      .catch(() => updateSyncDot("error"));
+    pushState();
   }
 }
 
@@ -1084,19 +1110,16 @@ function setSectionMeta(sectionId, updates) {
 }
 
 // ============================================================
-// FIREBASE SYNC
+// SUPABASE SYNC  (Postgres-backed — replaces Firebase)
 // ============================================================
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyB0-Tlq2Fl_MElU8bAFq6q0REj0dSZlfC4",
-  authDomain: "simply-nuts-task-tracker.firebaseapp.com",
-  databaseURL: "https://simply-nuts-task-tracker-default-rtdb.firebaseio.com",
-  projectId: "simply-nuts-task-tracker",
-  storageBucket: "simply-nuts-task-tracker.firebasestorage.app",
-  messagingSenderId: "606880758461",
-  appId: "1:606880758461:web:205f28b94a572a62c095d4"
-};
-let fbDb = null;
-let fbReady = false;
+// 1. Create a free project at supabase.com
+// 2. Run the SQL setup block (provided separately) in the SQL Editor
+// 3. Settings -> API: paste your Project URL and anon public key below
+const SUPABASE_URL = "https://lijzynxznwlbvplcwnzn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxpanp5bnh6bndsYnZwbGN3bnpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NjUyMzQsImV4cCI6MjA5NzI0MTIzNH0.H-UuyPVFUkim0voD739a5lA_DZoQ-zlA542asYQFQvM";
+const ROW_ID = "main";                                         // single shared record
+let sb = null;
+let fbReady = false;   // kept name so saveState() stays untouched-friendly
 
 function updateSyncDot(status) {
   const dot = document.getElementById("syncDot");
@@ -1107,49 +1130,99 @@ function updateSyncDot(status) {
   txt.textContent = labels[status] || status;
 }
 
-function initFirebase() {
-  if (typeof firebase === "undefined") { updateSyncDot("offline"); return; }
+// Visible banner so people KNOW when data is saving only on this device
+function showSyncBanner(err) {
+  let b = document.getElementById("syncBanner");
+  if (!b) {
+    b = document.createElement("div");
+    b.id = "syncBanner";
+    b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9999;padding:10px 16px;" +
+      "background:#7a2e1e;color:#ffe9e0;font:600 13px/1.4 system-ui,sans-serif;text-align:center;" +
+      "box-shadow:0 -4px 14px rgba(0,0,0,.3);";
+    document.body.appendChild(b);
+  }
+  const code = (err && err.code ? String(err.code) : "").toLowerCase();
+  let hint = "";
+  if (code.indexOf("not-configured") > -1) hint = " (Supabase keys not added to the file yet.)";
+  else if (code.indexOf("permission") > -1 || code.indexOf("42501") > -1 || code.indexOf("pgrst") > -1) hint = " (Database access policy needs updating.)";
+  b.innerHTML = "\u26a0\ufe0f Saving on this device only \u2014 cloud sync is off, so others won't see your changes yet." +
+    hint + " <span style='opacity:.75'>Your work is safe locally.</span>";
+  b.style.display = "block";
+}
+function hideSyncBanner() {
+  const b = document.getElementById("syncBanner");
+  if (b) b.style.display = "none";
+}
+
+function initSupabase() {
+  const unconfigured = !SUPABASE_URL.includes("supabase.co") || SUPABASE_ANON_KEY.indexOf("YOUR") === 0;
+  if (unconfigured) { updateSyncDot("offline"); showSyncBanner({ code: "not-configured" }); return; }
+  if (typeof supabase === "undefined") { updateSyncDot("offline"); showSyncBanner({ code: "client-missing" }); return; }
   try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    fbDb = firebase.database().ref("tracker");
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     updateSyncDot("syncing");
 
-    // Listen for remote changes — fires once on connect, then on every update
-    fbDb.on("value", snap => {
-      const remote = snap.val();
-      if (!remote) {
-        // First device ever — push local state to cloud
-        fbDb.set(state);
+    // Initial load of the shared record
+    sb.from("tracker_state").select("data,last_modified").eq("id", ROW_ID).maybeSingle()
+      .then(({ data, error }) => {
+        if (error) { fbReady = false; updateSyncDot("error"); showSyncBanner(error); return; }
+        if (!data) {
+          // First device ever — seed the cloud with local state
+          pushState().then(() => { fbReady = true; updateSyncDot("connected"); hideSyncBanner(); });
+          return;
+        }
+        const remote = data.data;
+        // Accept remote only if strictly newer than ours
+        if (remote && (!state.lastModified || (remote.lastModified && remote.lastModified > state.lastModified))) {
+          mergeRemote(remote);
+        }
         fbReady = true;
         updateSyncDot("connected");
-        return;
-      }
-      // Ensure all keys exist (backwards compat)
-      remote.tasks = remote.tasks || {};
-      remote.collapsed = remote.collapsed || {};
-      remote.notes = remote.notes || {};
-      remote.sectionMeta = remote.sectionMeta || {};
-      if (!remote.version) remote.version = 1;
+        hideSyncBanner();
+      });
 
-      // Accept remote data only if it's strictly newer than ours
-      if (!state.lastModified || (remote.lastModified && remote.lastModified > state.lastModified)) {
-        state = remote;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        renderAll();
-        updateAllProgress();
-      }
-      fbReady = true;
-      updateSyncDot("connected");
-    });
-
-    // Monitor connection state
-    firebase.database().ref(".info/connected").on("value", snap => {
-      if (fbReady) updateSyncDot(snap.val() ? "connected" : "offline");
-    });
-  } catch(e) {
-    console.warn("Firebase sync unavailable:", e);
+    // Realtime — apply other devices' changes as they happen
+    sb.channel("tracker_state_changes")
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "tracker_state", filter: "id=eq." + ROW_ID },
+        (payload) => {
+          const remote = payload.new && payload.new.data;
+          if (remote && remote.lastModified && (!state.lastModified || remote.lastModified > state.lastModified)) {
+            mergeRemote(remote);
+          }
+        })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED" && fbReady) { updateSyncDot("connected"); }
+      });
+  } catch (e) {
+    console.warn("Supabase sync unavailable:", e);
     updateSyncDot("offline");
+    showSyncBanner(e);
   }
+}
+
+// Write the whole state blob to the single shared row
+function pushState() {
+  if (!sb) return Promise.resolve();
+  return sb.from("tracker_state")
+    .upsert({ id: ROW_ID, data: state, last_modified: state.lastModified || new Date().toISOString() })
+    .then(({ error }) => {
+      if (error) { updateSyncDot("error"); showSyncBanner(error); }
+      else { updateSyncDot("connected"); hideSyncBanner(); }
+    });
+}
+
+// Adopt a newer remote state and re-render
+function mergeRemote(remote) {
+  remote.tasks = remote.tasks || {};
+  remote.collapsed = remote.collapsed || {};
+  remote.notes = remote.notes || {};
+  remote.sectionMeta = remote.sectionMeta || {};
+  if (!remote.version) remote.version = 1;
+  state = remote;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderAll();
+  updateAllProgress();
 }
 
 // ============================================================
@@ -1183,6 +1256,8 @@ function renderAll() {
   container.innerHTML = SECTIONS.map(renderSection).join("");
   updateAllProgress();
   restoreCollapse();
+  populateAssigneeFilter();
+  applyFilters();
 }
 
 function renderSection(section) {
@@ -1341,6 +1416,7 @@ function debounce(key, fn, ms) {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderAll();
+  renderMilestones();
 
   const main = document.getElementById("sections");
 
@@ -1447,9 +1523,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 
   // Filter
-  document.getElementById("filter").addEventListener("change", (e) => {
-    applyFilter(e.target.value);
-  });
+  document.getElementById("filter").addEventListener("change", applyFilters);
+  document.getElementById("assigneeFilter").addEventListener("change", applyFilters);
 
   // Expand/Collapse All
   document.getElementById("expandAll").addEventListener("click", () => {
@@ -1473,8 +1548,8 @@ document.addEventListener("DOMContentLoaded", () => {
     e.target.value = "";  // reset so same file can be re-imported
   });
 
-  // Start Firebase sync
-  initFirebase();
+  // Start cloud sync
+  initSupabase();
 });
 
 // ============================================================
@@ -1731,17 +1806,60 @@ function updateMetaLinkPreview(sid) {
 // ============================================================
 // FILTER
 // ============================================================
-function applyFilter(value) {
+// Milestone countdowns — tweak the dates/labels anytime
+const MILESTONES = [
+  { name: "Data locked", date: "2026-06-30" },
+  { name: "Store built", date: "2026-07-10" },
+  { name: "Polish + launch", date: "2026-07-20" },
+];
+function renderMilestones() {
+  const el = document.getElementById("milestoneStrip");
+  if (!el) return;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  el.innerHTML = MILESTONES.map(m => {
+    const d = new Date(m.date + "T00:00:00");
+    const days = Math.round((d - today) / 86400000);
+    let cls = "", left, color;
+    if (days < 0) { cls = "past"; left = Math.abs(days) + "d ago"; color = "var(--pine)"; }
+    else if (days === 0) { cls = "soon"; left = "Due today"; color = "var(--burn)"; }
+    else { cls = days <= 5 ? "soon" : ""; left = days + " day" + (days === 1 ? "" : "s") + " left"; color = days <= 5 ? "var(--burn)" : "var(--walnut)"; }
+    const nice = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return `<div class="ms-chip ${cls}"><span class="ms-name">${escHtml(m.name)}</span><span class="ms-date">${nice}</span><span class="ms-left" style="color:${color}">${left}</span></div>`;
+  }).join("");
+}
+
+function applyFilters() {
+  const statusEl = document.getElementById("filter");
+  const whoEl = document.getElementById("assigneeFilter");
+  const status = statusEl ? statusEl.value : "all";
+  const who = whoEl ? whoEl.value : "all";
   document.querySelectorAll(".task").forEach(row => {
     const id = row.dataset.id;
     const s = getTask(id);
     let show = true;
-    if (value === "incomplete") show = !s.done;
-    if (value === "complete") show = s.done;
-    if (value === "has-link") show = !!(s.link && s.link.trim());
-    if (value === "no-link") show = !(s.link && s.link.trim());
+    if (status === "incomplete") show = !s.done;
+    else if (status === "complete") show = s.done;
+    else if (status === "has-link") show = !!(s.link && s.link.trim());
+    else if (status === "no-link") show = !(s.link && s.link.trim());
+    if (show && who !== "all") {
+      show = (s.assignee || "").trim().toLowerCase() === who.toLowerCase();
+    }
     row.style.display = show ? "" : "none";
   });
+}
+
+// Build the assignee dropdown from whoever is actually assigned, keeping selection
+function populateAssigneeFilter() {
+  const sel = document.getElementById("assigneeFilter");
+  if (!sel) return;
+  const names = new Set();
+  Object.values(state.tasks || {}).forEach(t => { if (t.assignee && t.assignee.trim()) names.add(t.assignee.trim()); });
+  Object.values(state.sectionMeta || {}).forEach(m => { if (m.assignee && m.assignee.trim()) names.add(m.assignee.trim()); });
+  const current = sel.value;
+  const sorted = Array.from(names).sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="all">Everyone</option>' +
+    sorted.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join("");
+  if (current && (current === "all" || sorted.some(n => n.toLowerCase() === current.toLowerCase()))) sel.value = current;
 }
 
 // ============================================================
