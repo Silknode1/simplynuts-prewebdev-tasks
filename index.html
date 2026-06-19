@@ -3,1905 +3,614 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simply Nuts — Task Tracker</title>
-<style>
-:root {
-  --espresso: #24160f;
-  --walnut: #6e4023;
-  --copper: #b56a3b;
-  --pine: #3e5f43;
-  --cream: #fdf8f0;
-  --snow: #fffdfa;
-  --ink: #1d1612;
-  --card-border: #e8d9c7;
-  --forest-500: #3d8b3d;
-  --forest-600: #2d6b2d;
-  --wood-100: #f5e6d0;
-  --wood-200: #e8c9a0;
-  --wood-600: #8b5529;
-  --burn: #c45e20;
-  --done-bg: rgba(61,139,61,0.06);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--cream);
-  color: var(--ink);
-  line-height: 1.5;
-  min-height: 100vh;
-}
-
-header {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 1rem;
-}
-
-header h1 {
-  font-size: 1.4rem;
-  color: var(--espresso);
-  font-weight: 700;
-}
-
-header .subtitle {
-  font-size: 0.85rem;
-  color: var(--walnut);
-  margin-top: 0.25rem;
-}
-
-.global-progress {
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--wood-100);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--forest-500);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-  width: 0%;
-}
-
-.progress-text {
-  font-size: 0.8rem;
-  color: var(--walnut);
-  white-space: nowrap;
-  font-weight: 600;
-  min-width: 90px;
-  text-align: right;
-}
-
-.controls {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.controls select, .controls button {
-  font-size: 0.78rem;
-  padding: 0.35rem 0.6rem;
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  background: var(--snow);
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.controls button:hover {
-  background: var(--wood-100);
-}
-
-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0.5rem 1.5rem 3rem;
-}
-
-/* --- Sections (collapsible) --- */
-details.section {
-  background: var(--snow);
-  overflow: hidden;
-}
-
-details.section > summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 0.85rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  user-select: none;
-  background: var(--snow);
-  transition: background 0.15s;
-}
-
-details.section > summary:hover {
-  background: var(--wood-100);
-}
-
-details.section > summary::-webkit-details-marker { display: none; }
-
-.section-arrow {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-left: 5px solid var(--walnut);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  transition: transform 0.2s;
-  flex-shrink: 0;
-}
-
-details.section[open] > summary .section-arrow {
-  transform: rotate(90deg);
-}
-
-.section-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--espresso);
-  flex: 1;
-}
-
-.section-progress {
-  font-size: 0.75rem;
-  color: var(--walnut);
-  white-space: nowrap;
-  font-weight: 600;
-}
-
-.section-bar {
-  width: 60px;
-  height: 5px;
-  background: var(--wood-100);
-  border-radius: 3px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.section-bar-fill {
-  height: 100%;
-  background: var(--forest-500);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.section-body {
-  padding: 0 1rem 1rem;
-}
-
-.section-intro {
-  font-size: 0.82rem;
-  color: var(--walnut);
-  font-style: italic;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--card-border);
-}
-
-/* --- Section Notes --- */
-.section-notes-wrap {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px dashed var(--card-border);
-}
-
-.section-notes-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--walnut);
-  margin-bottom: 0.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.section-notes-label::before {
-  content: "📝";
-  font-size: 0.85rem;
-}
-
-.section-notes {
-  width: 100%;
-  min-height: 70px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: var(--ink);
-  background: rgba(253,248,240,0.6);
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  padding: 0.5rem 0.6rem;
-  resize: vertical;
-  outline: none;
-  line-height: 1.5;
-}
-
-.section-notes:focus {
-  border-color: var(--copper);
-  background: var(--snow);
-  box-shadow: 0 0 0 2px rgba(181,106,59,0.1);
-}
-
-.section-notes::placeholder {
-  color: var(--wood-200);
-  font-style: italic;
-}
-
-/* --- Section Meta Toggle & Directions Panel --- */
-.section-meta-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--copper);
-  background: transparent;
-  border: 1.5px solid var(--copper);
-  border-radius: 5px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s, transform 0.15s;
-  padding: 0;
-}
-
-.section-meta-toggle:hover {
-  background: var(--copper);
-  color: var(--snow);
-}
-
-.section-meta-toggle.open {
-  background: var(--copper);
-  color: var(--snow);
-  transform: rotate(45deg);
-}
-
-.section-meta {
-  display: none;
-  margin-bottom: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(181,106,59,0.05);
-  border: 1px solid rgba(181,106,59,0.18);
-  border-radius: 8px;
-}
-
-.section-meta.visible {
-  display: block;
-}
-
-.section-meta-field {
-  margin-bottom: 0.6rem;
-}
-
-.section-meta-field:last-child {
-  margin-bottom: 0;
-}
-
-.section-meta-field label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--walnut);
-  margin-bottom: 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.meta-assignee,
-.meta-directions,
-.meta-link-text,
-.meta-link-url {
-  width: 100%;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: var(--ink);
-  background: var(--snow);
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  padding: 0.4rem 0.5rem;
-  outline: none;
-}
-
-.meta-assignee:focus,
-.meta-directions:focus,
-.meta-link-text:focus,
-.meta-link-url:focus {
-  border-color: var(--copper);
-  box-shadow: 0 0 0 2px rgba(181,106,59,0.1);
-}
-
-.meta-directions {
-  min-height: 60px;
-  resize: vertical;
-  line-height: 1.5;
-}
-
-.meta-link-row {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.meta-link-text {
-  flex: 1;
-  min-width: 140px;
-}
-
-.meta-link-url {
-  flex: 1.5;
-  min-width: 180px;
-}
-
-.meta-link-rendered {
-  margin-top: 0.35rem;
-  font-size: 0.82rem;
-}
-
-.meta-link-rendered a {
-  color: var(--copper);
-  text-decoration: none;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(181,106,59,0.3);
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.meta-link-rendered a:hover {
-  color: var(--burn);
-  border-bottom-color: var(--burn);
-}
-
-/* --- Subsections --- */
-.subsection {
-  margin-bottom: 0.75rem;
-}
-
-.subsection h3 {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--wood-600);
-  margin-bottom: 0.4rem;
-  padding-top: 0.4rem;
-}
-
-/* --- Task Rows --- */
-.task {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
-  flex-wrap: wrap;
-}
-
-.task:last-child { border-bottom: none; }
-
-.task.done {
-  background: var(--done-bg);
-  border-radius: 4px;
-}
-
-.task-check {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex: 1;
-  min-width: 200px;
-  cursor: pointer;
-}
-
-.task-check input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--forest-500);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.task-text {
-  font-size: 0.82rem;
-  color: var(--ink);
-}
-
-.task.done .task-text {
-  text-decoration: line-through;
-  opacity: 0.5;
-}
-
-.task-fields {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-}
-
-.field-assignee {
-  width: 100px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.4rem;
-  border: none;
-  border-bottom: 1px solid var(--card-border);
-  background: transparent;
-  color: var(--ink);
-  outline: none;
-}
-
-.field-assignee:focus {
-  border-bottom-color: var(--copper);
-}
-
-.link-group {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-}
-
-.field-link {
-  width: 160px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.4rem;
-  border: none;
-  border-bottom: 1px solid var(--card-border);
-  background: transparent;
-  color: var(--ink);
-  outline: none;
-}
-
-.field-link:focus {
-  border-bottom-color: var(--copper);
-}
-
-.link-out {
-  display: none;
-  font-size: 0.85rem;
-  color: var(--copper);
-  text-decoration: none;
-  padding: 0.15rem 0.3rem;
-  border-radius: 4px;
-  line-height: 1;
-}
-
-.link-out:hover {
-  background: var(--wood-100);
-  color: var(--burn);
-}
-
-.link-out.visible {
-  display: inline-block;
-}
-
-footer {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem;
-  font-size: 0.72rem;
-  color: var(--walnut);
-  text-align: center;
-  opacity: 0.7;
-}
-
-/* --- Section Wrapper + Green Top Progress Bar --- */
-.section-wrap {
-  margin-bottom: 0.75rem;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--card-border);
-  background: var(--snow);
-}
-
-.section-top-bar {
-  position: relative;
-  height: 22px;
-  background: var(--wood-100);
-  overflow: hidden;
-}
-
-.section-top-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--pine), var(--forest-500));
-  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  width: 0%;
-  border-radius: 0 3px 3px 0;
-}
-
-.section-top-pct {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-  transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s;
-  padding: 0 6px;
-}
-
-/* --- Dashboard --- */
-#dashboard {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 1.5rem 0.75rem;
-}
-
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr 1fr;
-  gap: 0.75rem;
-}
-
-.dash-card {
-  background: var(--snow);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.dash-card h3 {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--walnut);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.dash-card canvas {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-.dash-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.75rem;
-  margin-top: 0.5rem;
-  justify-content: center;
-}
-
-.dash-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.65rem;
-  color: var(--walnut);
-}
-
-.dash-legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* --- Responsive --- */
-@media (max-width: 640px) {
-  header { padding: 1.25rem 1rem 0.75rem; }
-  main { padding: 0.5rem 1rem 2rem; }
-  #dashboard { padding: 0 1rem 0.5rem; }
-  .dash-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-  .dash-card canvas { max-width: 260px; }
-  .task { flex-direction: column; align-items: flex-start; gap: 0.3rem; padding: 0.5rem 0; }
-  .task-fields { width: 100%; padding-left: 1.6rem; }
-  .field-assignee { flex: 1; width: auto; }
-  .field-link { flex: 1; width: auto; }
-  .section-bar { display: none; }
-  .section-top-bar { height: 18px; }
-  .section-top-pct { font-size: 0.6rem; }
-  .meta-link-row { flex-direction: column; }
-  .meta-link-text, .meta-link-url { min-width: 0; width: 100%; }
-}
-
-@media (min-width: 641px) and (max-width: 800px) {
-  .dash-grid { grid-template-columns: 1fr 1fr; }
-  .dash-card:nth-child(2) { grid-column: 1 / -1; }
-}
-.sync-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: var(--walnut);
-  padding: 3px 10px;
-  background: var(--snow);
-  border: 1px solid var(--card-border);
-  border-radius: 999px;
-}
-.sync-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #999;
-  flex-shrink: 0;
-}
-.sync-dot.connected { background: #3d8b3d; }
-.sync-dot.syncing { background: #e8a83e; animation: syncPulse 1s infinite; }
-.sync-dot.error { background: #c45e20; }
-.sync-dot.offline { background: #999; }
-@keyframes syncPulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-</style>
+<title>Stock the Shelf — Simply Nuts</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@600&display=swap');
+:root{
+  --espresso:#241910;--panel:#33251a;--panel2:#3d2c1d;--line:#4a3927;
+  --honey:#E8A830;--honeyDeep:#C9772E;--cream:#F6EFE2;--parchment:#E7D8BF;
+  --pistachio:#8BA45A;--coral:#E5734E;--muted:#9a836a;
+  --fur:#c8843f;--furDark:#a5662c;--belly:#f3e2c4;--stripe:#3a2412;--nose:#2a1a10;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Space Grotesk',system-ui,sans-serif;color:var(--cream);min-height:100vh;padding:16px;
+  background:radial-gradient(1100px 500px at 80% -10%,rgba(232,168,48,.16),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(139,164,90,.10),transparent 55%),var(--espresso);}
+.wrap{max-width:940px;margin:0 auto;}
+.muted{color:var(--muted);font-size:13px;}
+
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;background:linear-gradient(180deg,rgba(61,44,29,.7),rgba(45,33,22,.6));}
+.hud-left{display:flex;align-items:center;gap:12px;}
+.bubble{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;background:rgba(36,25,16,.7);border:1px solid var(--line);padding:7px 12px;border-radius:12px;border-bottom-left-radius:3px;max-width:240px;}
+.stats{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.stat{display:flex;flex-direction:column;gap:2px;min-width:52px;}
+.stat-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+.stat-num{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;color:var(--honey);line-height:1;}
+.combo-track{height:4px;width:50px;background:#2c2014;border-radius:99px;margin-top:5px;overflow:hidden;}
+.combo-fill{display:block;height:100%;background:var(--pistachio);border-radius:99px;transition:width .08s linear;}
+.btn{cursor:pointer;border:1px solid var(--honey);background:transparent;color:var(--honey);font-family:'Fraunces',serif;font-weight:700;font-size:13px;padding:8px 13px;border-radius:10px;}
+.btn:hover{background:rgba(232,168,48,.12);}
+.btn.solid{border:none;background:linear-gradient(180deg,var(--honey),var(--honeyDeep));color:#241910;}
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tab{cursor:pointer;border:1px solid var(--line);background:rgba(45,33,22,.5);color:var(--parchment);font-family:'Fraunces',serif;font-weight:700;font-size:14px;padding:9px 15px;border-radius:11px;}
+.tab.active{background:linear-gradient(180deg,var(--honey),var(--honeyDeep));color:#241910;border-color:var(--honey);}
+.reslinks{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 14px;}
+.reslink{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:12.5px;color:var(--parchment);background:rgba(36,25,16,.45);border:1px solid var(--line);border-radius:99px;padding:6px 12px;transition:border-color .15s,color .15s;}
+.reslink:hover{border-color:var(--honey);color:var(--honey);}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* generic forms / lists */
+.card2{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(45,33,22,.5);margin-bottom:14px;}
+.card2 h3{font-family:'Fraunces',serif;font-size:18px;margin-bottom:4px;}
+.card2 .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.in{width:100%;background:#1d140c;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--cream);font-family:inherit;font-size:15px;outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:10px;}
+.in:focus{border-color:var(--honey);box-shadow:0 0 0 3px rgba(232,168,48,.16);}
+textarea.in{resize:vertical;line-height:1.4;}
+label.lbl{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+@media(max-width:620px){.grid2{grid-template-columns:1fr;}}
+.list{display:flex;flex-direction:column;gap:8px;}
+.row{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#1d140c;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.rowmain{min-width:0;flex:1;}
+.row b{color:var(--cream);font-family:'Fraunces',serif;}
+.row .meta{color:var(--muted);font-size:12px;margin-top:3px;}
+.rowacts{display:flex;gap:6px;flex:none;}
+.iconbtn{cursor:pointer;border:1px solid var(--line);background:#2c2014;color:var(--parchment);border-radius:8px;width:30px;height:30px;font-size:14px;line-height:1;display:grid;place-items:center;padding:0;}
+.iconbtn:hover{border-color:var(--honey);color:var(--honey);}
+.iconbtn.del:hover{border-color:var(--coral);color:var(--coral);}
+.editbanner{background:rgba(229,115,78,.12);border:1px solid var(--coral);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#2b3318;color:#dbe9bf;border:1px solid #3e4d22;margin-right:5px;}
+
+/* Chippy */
+.chip-wrap{position:relative;width:64px;height:74px;flex:none;}
+.chip{width:64px;height:74px;display:block;transform-origin:50% 90%;}
+.chip-floor{position:absolute;left:50%;bottom:-2px;width:1px;height:1px;}
+.chHead{transform-origin:50% 70%;}.chBody{transform-origin:50% 30%;}.star-eyes{opacity:0;}
+.chip-wrap.is-idle .chip{animation:bob 2.6s ease-in-out infinite;}
+.chip-wrap.is-lock .chHead{animation:nod .4s ease;}
+.chip-wrap.is-combo .chip{animation:shake .4s ease;}
+.chip-wrap.is-wrong .chip{animation:sad .5s ease;}
+.chip-wrap.is-deflate .chip{animation:deflate .7s ease;}
+.chip-wrap.is-win .chHead{animation:headPop 1s cubic-bezier(.3,1.4,.4,1);}
+.chip-wrap.is-win .star-eyes{opacity:1;}.chip-wrap.is-win .normal-eyes{opacity:0;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes nod{0%,100%{transform:translateY(0) rotate(0)}40%{transform:translateY(3px) rotate(-4deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px) rotate(-3deg)}40%{transform:translateX(3px) rotate(3deg)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+@keyframes sad{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(4px) rotate(6deg)}}
+@keyframes deflate{0%{transform:scaleY(1)}50%{transform:scaleY(.5) scaleX(1.2) translateY(20px)}100%{transform:scaleY(1)}}
+@keyframes headPop{0%{transform:translateY(0) rotate(0)}35%{transform:translateY(-40px) rotate(18deg)}70%{transform:translateY(-34px) rotate(-14deg)}100%{transform:translateY(0) rotate(0)}}
+
+/* game */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:780px){.grid{grid-template-columns:1fr;}}
+.entry{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(45,33,22,.5);}
+.entry-top{display:flex;justify-content:space-between;align-items:baseline;}
+.entry-title{font-family:'Fraunces',serif;font-weight:900;font-size:19px;}
+.eta{font-size:12px;color:#bda988;font-family:'JetBrains Mono',monospace;}
+.prog{height:7px;background:#2c2014;border-radius:99px;margin:11px 0 13px;overflow:hidden;}
+.prog>span{display:block;height:100%;background:linear-gradient(90deg,var(--honeyDeep),var(--honey));border-radius:99px;transition:width .4s cubic-bezier(.2,.8,.2,1);}
+.steps{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.stepitem.done .stepchip{opacity:.5;}
+.stepchip{display:flex;align-items:center;gap:9px;width:100%;text-align:left;cursor:pointer;background:transparent;border:none;color:var(--cream);padding:5px 3px;font-family:inherit;font-size:14px;}
+.stepchip:disabled{cursor:default;}
+.stepdot{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;flex:none;border:1px solid var(--line);font-size:12px;font-family:'JetBrains Mono',monospace;color:#bda988;background:#2c2014;}
+.stepitem.active .stepdot{background:var(--honey);color:#241910;border-color:var(--honey);box-shadow:0 0 0 4px rgba(232,168,48,.18);}
+.stepitem.done .stepdot{background:var(--pistachio);color:#1c2410;border-color:var(--pistachio);}
+.steplabel{font-family:'Fraunces',serif;font-weight:700;}
+.stepitem.active .steplabel{color:var(--honey);}
+.field{margin:6px 0 4px 32px;animation:slideIn .25s ease;}
+.hint{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.picks{display:flex;flex-wrap:wrap;gap:7px;}
+.pick{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 9px;cursor:pointer;background:#1d140c;border:1px solid var(--line);border-radius:10px;color:var(--parchment);font-family:inherit;}
+.pick span{font-size:21px;}.pick small{font-size:10px;}
+.pick.sel{border-color:var(--honey);background:#3a2a16;box-shadow:0 0 0 3px rgba(232,168,48,.16);}
+.chip-pick{padding:7px 11px;cursor:pointer;background:#1d140c;border:1px solid var(--line);border-radius:99px;color:var(--parchment);font-family:inherit;font-size:13px;}
+.chip-pick.sel{border-color:var(--honey);background:#3a2a16;color:var(--cream);}
+.toggle{padding:8px 13px;cursor:pointer;background:#1d140c;border:1px solid var(--line);border-radius:99px;color:var(--parchment);font-family:inherit;font-size:13px;}
+.toggle.on{border-color:var(--pistachio);background:#2b3318;color:#dbe9bf;}
+.suggest{margin:0 0 8px;display:block;width:100%;cursor:pointer;background:rgba(139,164,90,.12);border:1px dashed var(--pistachio);color:#cfe0ad;border-radius:10px;padding:8px;font-family:inherit;font-size:13px;}
+.lock{margin-top:6px;width:100%;cursor:pointer;border:none;border-radius:11px;padding:12px;background:linear-gradient(180deg,var(--honey),var(--honeyDeep));color:#241910;font-family:'Fraunces',serif;font-weight:900;font-size:15px;box-shadow:0 6px 16px rgba(232,168,48,.25);display:flex;justify-content:center;gap:8px;align-items:center;}
+.lock.invalid{background:linear-gradient(180deg,#7a5a3a,#5e4429);color:#e7d8bf;box-shadow:none;}
+.lockpts{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(36,25,16,.25);padding:2px 7px;border-radius:7px;}
+.stage{border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:center;background:radial-gradient(120% 80% at 50% 0%,rgba(61,44,29,.5),rgba(36,25,16,.3));}
+.stage-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;align-self:flex-start;}
+.pcard{position:relative;width:100%;max-width:280px;background:var(--cream);border-radius:16px;overflow:hidden;border:1px solid #d8c6a6;box-shadow:0 14px 40px rgba(0,0,0,.35);transition:filter .5s,transform .4s;color:#3a2a18;}
+.pcard.live{transform:translateY(-2px);box-shadow:0 20px 55px rgba(232,168,48,.3),0 14px 40px rgba(0,0,0,.4);}
+.c-photo{height:124px;display:grid;place-items:center;background:linear-gradient(135deg,#f0e4cd,#e7d3ad);}
+.c-photo span{font-size:58px;}
+.c-body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:7px;}
+.c-cat{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--honeyDeep);font-weight:600;}
+.c-name{font-family:'Fraunces',serif;font-weight:900;font-size:20px;line-height:1.1;color:#2a1d10;}
+.c-price{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:21px;color:#2a1d10;}
+.c-meta{font-size:11px;color:#7a6a52;}
+.c-badges{display:flex;gap:6px;flex-wrap:wrap;min-height:20px;}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:#e6efd4;color:#5d7536;border:1px solid #cde0b0;}
+.badge.ghost{background:#ece1cc;color:#b3a488;border-color:#ddcdb0;}
+.c-desc{font-size:12.5px;line-height:1.45;color:#5f4f3a;}
+.c-cta{margin-top:3px;text-align:center;padding:9px;border-radius:10px;background:#ddd0b8;color:#8a795f;font-weight:700;font-family:'Fraunces',serif;transition:all .3s;}
+.c-cta.on{background:linear-gradient(180deg,var(--honey),var(--honeyDeep));color:#241910;}
+.slot.ghost{color:#b3a488;}
+.slot.ghost.c-photo{filter:grayscale(1);opacity:.5;}
+.slot.ghost.c-name,.slot.ghost.c-cat,.slot.ghost.c-desc{background:repeating-linear-gradient(100deg,#e9ddc6,#e9ddc6 8px,#e3d4b8 8px,#e3d4b8 16px);border-radius:6px;color:transparent;animation:shimmer 2.2s linear infinite;}
+.slot.ghost.c-name{min-height:23px;}.slot.ghost.c-cat{min-height:12px;width:46%;}.slot.ghost.c-desc{min-height:36px;}
+.slot.filled{animation:popIn .35s cubic-bezier(.2,1.3,.4,1);}
+.shine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 62%);background-size:250% 100%;animation:sweep 1.1s ease-out 1;}
+.livestamp{position:absolute;top:11px;right:-34px;transform:rotate(38deg);background:var(--coral);color:#fff;font-family:'Fraunces',serif;font-weight:900;font-size:12px;letter-spacing:.12em;padding:5px 40px;box-shadow:0 4px 10px rgba(0,0,0,.3);}
+.next{margin-top:15px;cursor:pointer;border:1px solid var(--honey);background:transparent;color:var(--honey);font-family:'Fraunces',serif;font-weight:700;font-size:14px;padding:10px 18px;border-radius:11px;}
+.floaters{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;z-index:70;}
+.floater{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:20px;animation:floatUp 1.1s ease-out forwards;text-shadow:0 2px 6px rgba(0,0,0,.4);}
+.confetti-piece{position:fixed;width:9px;height:13px;border-radius:2px;pointer-events:none;z-index:60;animation:confExplode var(--dur,1.1s) cubic-bezier(.2,.7,.3,1) forwards;}
+.poop-pellet{position:fixed;font-size:22px;pointer-events:none;z-index:60;animation:plop .55s cubic-bezier(.3,1.5,.5,1) forwards;transition:opacity .4s;}
+.poop-pellet.fade{opacity:0;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2b3318;color:#dbe9bf;border:1px solid #3e4d22;padding:10px 16px;border-radius:10px;font-size:13px;z-index:80;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.err{background:#4a2018;color:#ffd9cd;border-color:#7a2e1e;}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(20,12,6,.6);display:none;place-items:center;z-index:90;padding:16px;}
+.modal.show{display:grid;}
+.modal-card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:420px;width:100%;}
+.modal-card h3{font-family:'Fraunces',serif;font-size:19px;margin-bottom:10px;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{from{background-position:0 0}to{background-position:40px 0}}
+@keyframes sweep{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(8px) scale(.9)}20%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px)}}
+@keyframes confExplode{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+@keyframes plop{0%{transform:translateY(-26px) scale(.7);opacity:0}40%{opacity:1}70%{transform:translateY(0) scale(1.15,.8)}100%{transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001s!important;}}
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<header>
-  <h1>Simply Nuts &amp; More &mdash; Task Tracker</h1>
-  <p class="subtitle">Non-development checklist for launch readiness</p>
-  <div class="global-progress">
-    <div class="progress-bar"><div class="progress-fill" id="globalFill"></div></div>
-    <span class="progress-text" id="globalText">0 / 0 done</span>
+<header class="hud">
+  <div class="hud-left">
+    <div class="chip-wrap is-idle" id="chip">
+      <svg class="chip" viewBox="0 0 74 84" xmlns="http://www.w3.org/2000/svg">
+        <path d="M58 60 q22 -6 12 -30 q-3 14 -16 18 z" fill="var(--furDark)"/>
+        <g class="chBody"><ellipse cx="37" cy="60" rx="20" ry="19" fill="var(--fur)"/><ellipse cx="37" cy="62" rx="12" ry="13" fill="var(--belly)"/><ellipse cx="27" cy="78" rx="6" ry="4" fill="var(--furDark)"/><ellipse cx="47" cy="78" rx="6" ry="4" fill="var(--furDark)"/></g>
+        <g class="chHead">
+          <ellipse cx="22" cy="22" rx="6" ry="8" fill="var(--fur)"/><ellipse cx="22" cy="22" rx="3" ry="4.5" fill="#e8b890"/>
+          <ellipse cx="52" cy="22" rx="6" ry="8" fill="var(--fur)"/><ellipse cx="52" cy="22" rx="3" ry="4.5" fill="#e8b890"/>
+          <circle cx="37" cy="30" r="17" fill="var(--fur)"/>
+          <rect x="35" y="16" width="4" height="20" rx="2" fill="var(--stripe)"/>
+          <rect x="28" y="18" width="3" height="16" rx="1.5" fill="var(--stripe)"/><rect x="43" y="18" width="3" height="16" rx="1.5" fill="var(--stripe)"/>
+          <ellipse cx="26" cy="38" rx="7" ry="6" fill="#e9a86a"/><ellipse cx="48" cy="38" rx="7" ry="6" fill="#e9a86a"/>
+          <g class="normal-eyes"><circle cx="30" cy="30" r="4.5" fill="#fff"/><circle cx="31" cy="31" r="2.4" fill="var(--nose)"/><circle cx="44" cy="30" r="4.5" fill="#fff"/><circle cx="45" cy="31" r="2.4" fill="var(--nose)"/></g>
+          <g class="star-eyes"><text x="26" y="34" font-size="10">✦</text><text x="40" y="34" font-size="10">✦</text></g>
+          <ellipse cx="37" cy="36" rx="2.6" ry="2" fill="var(--nose)"/>
+        </g>
+      </svg>
+      <div class="chip-floor" id="chFloor"></div>
+    </div>
+    <div class="bubble" id="bubble">Let's stock the shelf!</div>
   </div>
-  <div class="controls">
-    <select id="filter">
-      <option value="all">All Tasks</option>
-      <option value="incomplete">Incomplete</option>
-      <option value="complete">Completed</option>
-      <option value="has-link">Has Link</option>
-      <option value="no-link">Needs Link</option>
-    </select>
-    <select id="assigneeFilter" title="Filter by who's assigned">
-      <option value="all">Everyone</option>
-    </select>
-    <button id="expandAll">Expand All</button>
-    <button id="collapseAll">Collapse All</button>
-    <button id="exportBtn">Export JSON</button>
-    <button id="importBtn">Import JSON</button>
-    <input type="file" id="importFile" accept=".json" style="display:none">
-    <span class="sync-badge"><span class="sync-dot offline" id="syncDot"></span><span id="syncText">Local only</span></span>
+  <div class="stats">
+    <div class="stat"><span class="stat-label">Score</span><span class="stat-num" id="score">0</span></div>
+    <div class="stat"><span class="stat-label">Combo</span><span class="stat-num" id="combo">—</span><span class="combo-track"><span class="combo-fill" id="comboFill"></span></span></div>
+    <div class="stat"><span class="stat-label">Shipped</span><span class="stat-num" id="shipped">0</span></div>
+    <button class="btn" id="gearBtn">⚙ Pricing</button>
+    <button class="btn" id="csvBtn">⬇ CSV</button>
   </div>
 </header>
 
-<div class="info-bars">
-  <div class="resource-bar">
-    <span class="ib-label">Start here</span>
-    <a class="primary" href="https://simplynuts-webdata-stock-the-shelf.netlify.app/" target="_blank" rel="noopener">&#129372; Stock the Shelf &mdash; add products</a>
-    <a href="https://docs.google.com/document/d/13R01ro_RY2BgjfuXMevopV4_kZxvLOe9LidvvHA98H8/edit" target="_blank" rel="noopener">&#128214; Guide</a>
-    <a href="https://notebooklm.google.com/notebook/70b84d52-a98c-4371-a304-6b86b95fea26" target="_blank" rel="noopener">&#127911; Ask NotebookLM</a>
-    <a href="https://drive.google.com/drive/folders/13VT7Zrns90LNYbx3fJH8UPj4uSoRIvaM" target="_blank" rel="noopener">&#128193; Drive</a>
-    <a href="https://www.simplynutsandmore.com" target="_blank" rel="noopener">&#127760; Live site</a>
-  </div>
-  <div id="milestoneStrip" class="milestone-strip"></div>
-</div>
-<style>
-.info-bars{max-width:900px;margin:.75rem auto 0;padding:0 1.5rem;display:flex;flex-direction:column;gap:.5rem;}
-.resource-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;background:var(--snow);border:1px solid var(--card-border);border-radius:8px;padding:.5rem .65rem;}
-.resource-bar .ib-label{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--walnut);margin-right:.25rem;}
-.resource-bar a{font-size:.8rem;text-decoration:none;color:var(--espresso);background:var(--wood-100);border:1px solid var(--card-border);border-radius:999px;padding:.28rem .7rem;font-weight:600;}
-.resource-bar a:hover{background:var(--wood-200);}
-.resource-bar a.primary{background:var(--copper);color:var(--snow);border-color:var(--copper);}
-.resource-bar a.primary:hover{filter:brightness(1.07);background:var(--copper);}
-.milestone-strip{display:flex;flex-wrap:wrap;gap:.4rem;}
-.ms-chip{display:flex;flex-direction:column;gap:1px;background:var(--snow);border:1px solid var(--card-border);border-left:3px solid var(--copper);border-radius:6px;padding:.35rem .6rem;min-width:118px;}
-.ms-chip .ms-name{font-size:.72rem;font-weight:700;color:var(--espresso);}
-.ms-chip .ms-date{font-size:.68rem;color:var(--walnut);}
-.ms-chip .ms-left{font-size:.7rem;font-weight:700;}
-.ms-chip.soon{border-left-color:var(--burn);}
-.ms-chip.past{opacity:.55;border-left-color:var(--pine);}
-@media(max-width:560px){.ms-chip{flex:1 1 100%;}}
-</style>
+<nav class="tabs">
+  <button class="tab active" data-tab="products">🥜 Products</button>
+  <button class="tab" data-tab="content">✍️ Descriptions &amp; FAQ</button>
+  <button class="tab" data-tab="marketing">📣 Marketing &amp; Accounts</button>
+</nav>
 
-<section id="dashboard">
-  <div class="dash-grid">
-    <div class="dash-card">
-      <h3>Overall Progress</h3>
-      <canvas id="chartOverall" width="180" height="180"></canvas>
-      <div class="dash-legend" id="legendOverall"></div>
+<div class="reslinks">
+  <a class="reslink" href="https://docs.google.com/document/d/13R01ro_RY2BgjfuXMevopV4_kZxvLOe9LidvvHA98H8/edit" target="_blank" rel="noopener">📋 Guide</a>
+  <a class="reslink" href="https://forms.gle/W9CbC5qz7hK44M7K7" target="_blank" rel="noopener">❓ Ask a question</a>
+  <a class="reslink" href="https://notebooklm.google.com/notebook/70b84d52-a98c-4371-a304-6b86b95fea26" target="_blank" rel="noopener">🎧 NotebookLM — idea help</a>
+  <a class="reslink" href="https://drive.google.com/drive/folders/13VT7Zrns90LNYbx3fJH8UPj4uSoRIvaM" target="_blank" rel="noopener">📁 Drive</a>
+  <a class="reslink" href="https://simplynuts-prewebdev-tasks.netlify.app/" target="_blank" rel="noopener">✅ Task list</a>
+</div>
+
+<!-- PRODUCTS -->
+<section class="panel active" id="panel-products">
+  <div class="grid">
+    <div class="entry">
+      <div class="entry-top"><div class="entry-title">Add a product</div><div class="eta" id="eta"></div></div>
+      <div class="prog"><span id="progFill"></span></div>
+      <div id="editBanner"></div>
+      <ol class="steps" id="steps"></ol>
     </div>
-    <div class="dash-card">
-      <h3>Tasks Done by Section</h3>
-      <canvas id="chartSections" width="400" height="180"></canvas>
+    <div class="stage">
+      <div class="stage-label">Your storefront, building live</div>
+      <div class="pcard" id="pcard">
+        <div class="slot c-photo ghost" data-slot="photo"><span id="cPhoto">🖼️</span></div>
+        <div class="c-body">
+          <div class="slot c-cat ghost" data-slot="category" id="cCat">Category</div>
+          <div class="slot c-name ghost" data-slot="name" id="cName">Product name</div>
+          <div class="slot c-price ghost" data-slot="price" id="cPrice">$0</div>
+          <div class="slot c-meta ghost" data-slot="meta" id="cMeta">SKU · stock</div>
+          <div class="slot c-meta ghost" data-slot="weight" id="cWeight">Net wt.</div>
+          <div class="slot c-badges ghost" data-slot="dietary" id="cBadges"><span class="badge ghost">dietary</span></div>
+          <div class="slot c-desc ghost" data-slot="description" id="cDesc">A short, mouth-watering description goes here.</div>
+          <div class="c-cta" id="cCta">Add to cart</div>
+        </div>
+      </div>
+      <div id="afterCard"></div>
     </div>
-    <div class="dash-card">
-      <h3>Completed by Assignee</h3>
-      <canvas id="chartAssignees" width="180" height="180"></canvas>
-      <div class="dash-legend" id="legendAssignees"></div>
-    </div>
+  </div>
+  <div class="card2" id="shelfReview" style="margin-top:16px">
+    <h3>On the shelf <span class="muted" id="prodCount"></span></h3>
+    <div class="sub">Everything you've stocked. Tap ✎ to fix a product or 🗑 to remove one.</div>
+    <div class="list" id="prodList"><div class="muted">Loading…</div></div>
   </div>
 </section>
 
-<main id="sections"></main>
+<!-- DESCRIPTIONS & FAQ -->
+<section class="panel" id="panel-content">
+  <div class="card2">
+    <h3>Product description</h3>
+    <div class="sub">Write the full description for a product. It feeds the website and the chatbot.</div>
+    <label class="lbl">Product name</label><input class="in" id="d_product" placeholder="e.g. Honey Roasted Cashews">
+    <label class="lbl">Overview</label><textarea class="in" id="d_overview" rows="2" placeholder="One or two sentences on flavor and character."></textarea>
+    <label class="lbl">Tasting notes</label><textarea class="in" id="d_tasting" rows="2" placeholder="Taste profile and texture."></textarea>
+    <label class="lbl">Ingredients &amp; allergens</label><textarea class="in" id="d_allergens" rows="2" placeholder="List ingredients; highlight allergens (contains tree nuts; made in a facility that also handles peanuts &amp; soy)."></textarea>
+    <label class="lbl">Serving suggestions</label><textarea class="in" id="d_serving" rows="2" placeholder="Snacking, salads, gifting…"></textarea>
+    <label class="lbl">Shelf life &amp; storage</label><input class="in" id="d_shelf" placeholder="e.g. Best within 6 months, sealed, cool dry place">
+    <button class="btn solid" id="d_save">Save description</button>
+    <div class="list" id="d_list" style="margin-top:14px"></div>
+  </div>
+  <div class="card2">
+    <h3>FAQ</h3>
+    <div class="sub">Add common customer questions. Aim for 5+.</div>
+    <label class="lbl">Question</label><input class="in" id="q_q" placeholder="e.g. Are your nuts gluten-free?">
+    <label class="lbl">Answer</label><textarea class="in" id="q_a" rows="2" placeholder="Short, friendly answer."></textarea>
+    <button class="btn solid" id="q_save">Add question</button>
+    <div class="list" id="q_list" style="margin-top:14px"></div>
+  </div>
+</section>
 
-<footer id="footerInfo"></footer>
+<!-- MARKETING -->
+<section class="panel" id="panel-marketing">
+  <div class="card2">
+    <h3>Social accounts</h3>
+    <div class="sub">Track each platform. <b>Don't put passwords here</b> — just note where the login is kept.</div>
+    <div class="grid2">
+      <div><label class="lbl">Platform</label><input class="in" id="a_platform" placeholder="LinkedIn / Instagram / Facebook / TikTok"></div>
+      <div><label class="lbl">Handle</label><input class="in" id="a_handle" placeholder="@simplynuts"></div>
+      <div><label class="lbl">URL</label><input class="in" id="a_url" placeholder="https://…"></div>
+      <div><label class="lbl">Owner</label><input class="in" id="a_owner" placeholder="Who manages it"></div>
+    </div>
+    <label class="lbl">Where the login is kept (not the password)</label><input class="in" id="a_creds" placeholder="e.g. Dad's password manager / ask Daniel">
+    <button class="btn solid" id="a_save">Save account</button>
+    <div class="list" id="a_list" style="margin-top:14px"></div>
+  </div>
+  <div class="card2">
+    <h3>Marketing assets</h3>
+    <div class="sub">Photos, videos, design files — and where they live.</div>
+    <div class="grid2">
+      <div><label class="lbl">Name</label><input class="in" id="m_name" placeholder="e.g. Cashew hero photo"></div>
+      <div><label class="lbl">Type</label><input class="in" id="m_type" placeholder="Photo / Video / Logo"></div>
+      <div><label class="lbl">Purpose / campaign</label><input class="in" id="m_purpose" placeholder="Homepage banner"></div>
+      <div><label class="lbl">Tags</label><input class="in" id="m_tags" placeholder="comma-separated: gift, holiday, bestseller"></div>
+      <div><label class="lbl">File location</label><input class="in" id="m_loc" placeholder="Drive link / folder"></div>
+      <div><label class="lbl">Owner</label><input class="in" id="m_owner" placeholder="Who made it"></div>
+    </div>
+    <button class="btn solid" id="m_save">Save asset</button>
+    <div class="list" id="m_list" style="margin-top:14px"></div>
+  </div>
+</section>
+
+</div>
+
+<div class="floaters" id="floaters"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Pricing settings modal -->
+<div class="modal" id="priceModal">
+  <div class="modal-card">
+    <h3>Pricing settings</h3>
+    <div class="sub" style="color:var(--muted);font-size:12px;margin-bottom:12px">Set once. Used to suggest a retail price from each product's wholesale cost.</div>
+    <div class="grid2">
+      <div><label class="lbl">Packaging cost ($/bag)</label><input class="in" id="s_pack" inputmode="decimal" placeholder="0.50"></div>
+      <div><label class="lbl">Labor cost ($/bag)</label><input class="in" id="s_labor" inputmode="decimal" placeholder="0.75"></div>
+      <div><label class="lbl">Avg shipping ($/bag)</label><input class="in" id="s_ship" inputmode="decimal" placeholder="1.20"></div>
+      <div><label class="lbl">Target margin (%)</label><input class="in" id="s_margin" inputmode="decimal" placeholder="55"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn solid" id="s_save" style="flex:1">Save</button><button class="btn" id="s_close">Close</button></div>
+  </div>
+</div>
 
 <script>
-// ============================================================
-// TASK DATA — transcribed from NON_DEV_TASKS.md
-// ============================================================
-const SECTIONS = [
-  {
-    id: "A", title: "A. Physical Measurements & Specs",
-    intro: "The design tool and shipping calculator need exact numbers. Grab a tape measure and a kitchen scale.",
-    subsections: [
-      { title: "Containers \u2014 Exterior Dimensions (L x W x H in inches)", tasks: [
-        { id:"A-0-0", text:"Wooden Box \u2014 Small (1 lb)" },
-        { id:"A-0-1", text:"Wooden Box \u2014 Medium (2 lb)" },
-        { id:"A-0-2", text:"Wooden Box \u2014 Large (4 lb)" },
-        { id:"A-0-3", text:"Bamboo Container \u2014 Small" },
-        { id:"A-0-4", text:"Bamboo Container \u2014 Medium" },
-        { id:"A-0-5", text:"Gift Tin \u2014 Small" },
-        { id:"A-0-6", text:"Gift Tin \u2014 Medium" },
-        { id:"A-0-7", text:"Gift Tin \u2014 Large" },
-      ]},
-      { title: "Containers \u2014 Interior Dimensions", tasks: [
-        { id:"A-1-0", text:"Interior space available for bags/inserts per container + size" },
-        { id:"A-1-1", text:"Gift Tin insert configurations (3-section insert vs single cavity)" },
-      ]},
-      { title: "Laser Engraving Surface Area (critical for the design tool)", tasks: [
-        { id:"A-2-0", text:"Wooden Box lid engravable area (inches) \u2014 all sizes" },
-        { id:"A-2-1", text:"Bamboo Container lid engravable area (inches)" },
-        { id:"A-2-2", text:"Gift Tin lid engravable area (inches)" },
-        { id:"A-2-3", text:"Note any curvature, border insets, or safe zones that reduce usable area" },
-      ]},
-      { title: "Weights (for shipping cost calculation)", tasks: [
-        { id:"A-3-0", text:"Empty weight of each container type + size" },
-        { id:"A-3-1", text:"Packed weight per variant (container + nuts + packaging)" },
-        { id:"A-3-2", text:"Weight of shipping box + packing material per variant" },
-      ]},
-      { title: "Shipping Boxes", tasks: [
-        { id:"A-4-0", text:"Dimensions of each shipping box used (per container size)" },
-        { id:"A-4-1", text:"Confirm which containers share the same shipping box size" },
-      ]},
-      { title: "Epilog Laser Machine Specs", tasks: [
-        { id:"A-5-0", text:"Max bed size (how many containers fit per run)" },
-        { id:"A-5-1", text:"Wooden Box: confirmed 6 per machine per run" },
-        { id:"A-5-2", text:"Time per run by container type (30+ min for wooden \u2014 get exact avg)" },
-        { id:"A-5-3", text:"Bamboo and tin run times" },
-        { id:"A-5-4", text:"Any file format quirks when importing from CorelDRAW" },
-      ]},
-    ]
-  },
-  {
-    id: "B", title: "B. Product Catalog & Inventory",
-    intro: "The website currently has 3 mock products. You need the real full list.",
-    subsections: [
-      { title: "Nuts (list every variety you sell)", tasks: [
-        { id:"B-0-0", text:"Variety name, price per pound, price per half-pound" },
-        { id:"B-0-1", text:"Roasted Almonds / Honey Cinnamon Almonds" },
-        { id:"B-0-2", text:"Jumbo Cashews" },
-        { id:"B-0-3", text:"Butter Toffee Peanuts (Secret Peanuts)" },
-        { id:"B-0-4", text:"Candied Pecans" },
-        { id:"B-0-5", text:"Macadamia Nuts" },
-        { id:"B-0-6", text:"Mixed Nuts varieties" },
-        { id:"B-0-7", text:"Any seasonal-only varieties" },
-      ]},
-      { title: "Chocolates", tasks: [
-        { id:"B-1-0", text:"Each chocolate variety, price per pound / half-pound" },
-        { id:"B-1-1", text:"List all chocolate varieties" },
-      ]},
-      { title: "Mixes / Trail Mixes", tasks: [
-        { id:"B-2-0", text:"Imperial Mix \u2014 price" },
-        { id:"B-2-1", text:"Any other mixes \u2014 prices" },
-        { id:"B-2-2", text:"List all mix varieties" },
-      ]},
-      { title: "Per-Product Details Needed", tasks: [
-        { id:"B-3-0", text:"Allergen info for each product (tree nuts, peanuts, dairy, soy, etc.)" },
-        { id:"B-3-1", text:"Shelf life / best-by window for each product" },
-        { id:"B-3-2", text:"Which products pair with which container types" },
-        { id:"B-3-3", text:"Minimum fill rules (e.g., half-pound minimum per variety)" },
-        { id:"B-3-4", text:"Current stock levels and supplier lead times" },
-      ]},
-    ]
-  },
-  {
-    id: "C", title: "C. Pricing & Business Rules",
-    intro: "The code has placeholder prices. These need to be real.",
-    subsections: [
-      { title: "Container Base Pricing (what you charge the customer)", tasks: [
-        { id:"C-0-0", text:"Wooden Box \u2014 Small / Medium / Large retail price" },
-        { id:"C-0-1", text:"Bamboo Container \u2014 Small / Medium price" },
-        { id:"C-0-2", text:"Gift Tin \u2014 Small / Medium / Large retail price" },
-        { id:"C-0-3", text:"Confirm whether container price includes engraving or if it\u2019s separate" },
-      ]},
-      { title: "Cost Basis (your actual costs \u2014 for margin calculation)", tasks: [
-        { id:"C-1-0", text:"Cost per empty container (each type \u00d7 size)" },
-        { id:"C-1-1", text:"Cost per lb for each nut/chocolate/mix (wholesale)" },
-        { id:"C-1-2", text:"Labor cost per unit for engraving (machine time + handling)" },
-        { id:"C-1-3", text:"Packaging materials per unit (crinkle paper, holiday paper, tape, labels)" },
-        { id:"C-1-4", text:"Shipping box cost per unit" },
-      ]},
-      { title: "Bulk / Corporate Discount Tiers", tasks: [
-        { id:"C-2-0", text:"Pricing at 12\u201324 units" },
-        { id:"C-2-1", text:"Pricing at 25\u201349 units" },
-        { id:"C-2-2", text:"Pricing at 50\u201399 units" },
-        { id:"C-2-3", text:"Pricing at 100+ units" },
-        { id:"C-2-4", text:"At what quantity does free shipping kick in (if ever)?" },
-      ]},
-      { title: "Promotions & Discounts", tasks: [
-        { id:"C-3-0", text:"Early bird discount: confirm 5% off before Nov 1" },
-        { id:"C-3-1", text:"Referral bonus: confirm 5% \u2014 decide minimum order (e.g., $500? 25 units?)" },
-        { id:"C-3-2", text:"Returning customer incentive \u2014 decide what to offer" },
-        { id:"C-3-3", text:"Any Black Friday / Cyber Monday specific pricing?" },
-      ]},
-      { title: "Shipping", tasks: [
-        { id:"C-4-0", text:"FedEx or UPS \u2014 which is primary carrier?" },
-        { id:"C-4-1", text:"Get current rate tables or API credentials for real-time quotes" },
-        { id:"C-4-2", text:"Shipping zones / delivery timeline commitments" },
-        { id:"C-4-3", text:"Expedited shipping options + pricing for last-minute December orders" },
-        { id:"C-4-4", text:"Shipping insurance threshold (at what order value?)" },
-      ]},
-      { title: "Tax", tasks: [
-        { id:"C-5-0", text:"Minnesota sales tax collection requirements" },
-        { id:"C-5-1", text:"Interstate tax nexus \u2014 do you collect sales tax on out-of-state orders?" },
-        { id:"C-5-2", text:"Food item tax exemptions in MN (if any)" },
-      ]},
-    ]
-  },
-  {
-    id: "D", title: "D. Logo & Engraving Specs (for the Upload Tool)",
-    intro: "",
-    subsections: [
-      { title: "Accepted Uploads \u2014 Decide & Document", tasks: [
-        { id:"D-0-0", text:"File types: .SVG, .EPS, .AI (vector \u2014 best quality)" },
-        { id:"D-0-1", text:"File types: .PNG, .PDF (raster \u2014 require high-res, transparent background)" },
-        { id:"D-0-2", text:"Maximum file size (recommend 10MB)" },
-        { id:"D-0-3", text:"Minimum resolution for raster files (recommend 300 DPI)" },
-      ]},
-      { title: "Engraving Constraints", tasks: [
-        { id:"D-1-0", text:"Max engravable area per container type (from Section A above)" },
-        { id:"D-1-1", text:"Text engraving character limit (code says 30\u201340 \u2014 confirm)" },
-        { id:"D-1-2", text:"Fonts available for text-only engraving (or always converted to paths?)" },
-        { id:"D-1-3", text:"Can you do double-sided engraving? (lid + inside?)" },
-      ]},
-      { title: "Design Cleanup Service", tasks: [
-        { id:"D-2-0", text:"Will you charge for design cleanup? If so, how much?" },
-        { id:"D-2-1", text:"Turnaround time for cleanup requests" },
-        { id:"D-2-2", text:"What qualifies as \u201ccleanup\u201d vs \u201credesign\u201d?" },
-      ]},
-      { title: "CorelDRAW / Production Pipeline", tasks: [
-        { id:"D-3-0", text:"What file format does CorelDRAW import best from the web tool?" },
-        { id:"D-3-1", text:"Any DPI/color mode requirements for the laser (e.g., grayscale only?)" },
-        { id:"D-3-2", text:"Does the proof approval happen before or after vectorization?" },
-      ]},
-    ]
-  },
-  {
-    id: "E", title: "E. Brand Assets to Collect or Create",
-    intro: "",
-    subsections: [
-      { title: "Logo & Identity", tasks: [
-        { id:"E-0-0", text:"High-resolution company logo \u2014 vector format (.SVG, .AI, .EPS)" },
-        { id:"E-0-1", text:"Logo in PNG with transparent background (for web)" },
-        { id:"E-0-2", text:"Confirm brand color palette (current code uses: espresso, walnut, copper, pine, ink, snow)" },
-        { id:"E-0-3", text:"Confirm brand typography (current code uses: Manrope)" },
-        { id:"E-0-4", text:"Chippy the Squirrel mascot \u2014 high-res vector + multiple poses if available" },
-      ]},
-      { title: "Product Photography", tasks: [
-        { id:"E-1-0", text:"Each container type photographed (empty, with lid, with engraving)" },
-        { id:"E-1-1", text:"Each nut/chocolate variety photographed (close-up, in scoop/bowl)" },
-        { id:"E-1-2", text:"Assembly process photos (engraving, filling, packing, shipping)" },
-        { id:"E-1-3", text:"Lifestyle shots (gift being received, office setting, holiday table)" },
-        { id:"E-1-4", text:"Before/after of laser engraving (blank lid \u2192 finished product)" },
-      ]},
-      { title: "Video Content (for social media & website)", tasks: [
-        { id:"E-2-0", text:"Laser engraving in action (close-up, satisfying, ASMR-worthy)" },
-        { id:"E-2-1", text:"Time-lapse of full order assembly (engrave \u2192 fill \u2192 pack \u2192 ship)" },
-        { id:"E-2-2", text:"\u201cMeet the family\u201d / behind-the-scenes brand story" },
-        { id:"E-2-3", text:"Unboxing video from customer perspective" },
-      ]},
-    ]
-  },
-  {
-    id: "F", title: "F. Social Media & Online Presence",
-    intro: "",
-    subsections: [
-      { title: "Accounts to Create / Secure", tasks: [
-        { id:"F-0-0", text:"LinkedIn Company Page \u2014 Priority 1 (corporate buyers live here)" },
-        { id:"F-0-1", text:"Instagram Business Account \u2014 Priority 2 (visual product showcase)" },
-        { id:"F-0-2", text:"TikTok Business Account \u2014 Priority 2 (laser ASMR content)" },
-        { id:"F-0-3", text:"Facebook Business Page \u2014 Priority 3 (for running ads)" },
-        { id:"F-0-4", text:"Secure identical handle across all platforms (e.g., @simplynutsandmore)" },
-        { id:"F-0-5", text:"Google Business Profile \u2014 update address, hours, website URL, photos" },
-      ]},
-    ]
-  },
-  {
-    id: "G", title: "G. Social Proof & Trust Elements",
-    intro: "Corporate buyers need confidence before placing a 500-unit order.",
-    subsections: [
-      { title: "", tasks: [
-        { id:"G-0-0", text:"List every recognizable past corporate client you\u2019ve served" },
-        { id:"G-0-1", text:"Contact each to get written permission to use their logo on the website" },
-        { id:"G-0-2", text:"Collect their high-res logos for the \u201cTrusted By\u201d banner" },
-        { id:"G-0-3", text:"Gather 3\u20135 testimonials (about: reliability, engraving quality, freshness, service)" },
-        { id:"G-0-4", text:"Any press coverage, local news features, or articles to reference?" },
-        { id:"G-0-5", text:'Verify \u201c37 years\u201d / \u201cSince 1987\u201d claim for the website badge' },
-        { id:"G-0-6", text:'\u201c500+ Companies Gifted\u201d stat on current prototype \u2014 verify actual number' },
-        { id:"G-0-7", text:'\u201c4.9/5 Corporate Satisfaction\u201d stat \u2014 verify or update' },
-      ]},
-    ]
-  },
-  {
-    id: "H", title: "H. Marketing Copy & Email Automation",
-    intro: "The Klaviyo event sinks are already coded. You need the content and the Klaviyo account.",
-    subsections: [
-      { title: "Email Sequences to Write", tasks: [
-        { id:"H-0-0", text:'Welcome email \u2014 "Welcome to the anti-boring corporate gift club"' },
-        { id:"H-0-1", text:"Abandoned workflow email (1 of 3) \u2014 gentle reminder, 24 hrs after" },
-        { id:"H-0-2", text:"Abandoned workflow email (2 of 3) \u2014 witty nudge, 3 days after" },
-        { id:"H-0-3", text:"Abandoned workflow email (3 of 3) \u2014 last chance + possible incentive, 7 days after" },
-        { id:"H-0-4", text:"Order confirmation email \u2014 logo proof + order summary" },
-        { id:"H-0-5", text:'Proof approved / in production email \u2014 "Your gifts are being crafted"' },
-        { id:"H-0-6", text:"Shipped / tracking email \u2014 with tracking number per recipient" },
-        { id:"H-0-7", text:'Past customer re-engagement \u2014 "Your previous design is pre-loaded"' },
-        { id:"H-0-8", text:"Referral invite email \u2014 shareable link with referral bonus info" },
-      ]},
-      { title: "Seasonal Campaigns", tasks: [
-        { id:"H-1-0", text:"Q3 Early Bird (Aug\u2013Sept) \u2014 5% off for ordering before Nov 1" },
-        { id:"H-1-1", text:'October Reminder \u2014 "Holiday season is coming, beat the rush"' },
-        { id:"H-1-2", text:'Thanksgiving / Black Friday promo \u2014 "Skip the generic fruitcake"' },
-        { id:"H-1-3", text:"Mid-December Panic email \u2014 expedited shipping for procrastinators" },
-        { id:"H-1-4", text:"Post-season Thank You \u2014 wrap-up email with referral ask for next year" },
-      ]},
-      { title: "SEO / Blog Article Topics", tasks: [
-        { id:"H-2-0", text:'"Top 5 Corporate Gifts That Won\u2019t End Up in the Trash"' },
-        { id:"H-2-1", text:'"Why Laser Engraving Leaves a Lasting Impression"' },
-        { id:"H-2-2", text:'"The ROI of Client Appreciation"' },
-        { id:"H-2-3", text:'"Health Benefits of Almonds You Won\u2019t Believe"' },
-        { id:"H-2-4", text:'"Why SMB Gifting Makes a Big Difference"' },
-        { id:"H-2-5", text:'"Customized Gifts Create a Rewarding Psychological Reaction"' },
-        { id:"H-2-6", text:'"How to Order Corporate Holiday Gifts Without the Email Chaos"' },
-        { id:"H-2-7", text:"Add 3\u20135 more topics" },
-      ]},
-    ]
-  },
-  {
-    id: "I", title: "I. Legal & Compliance",
-    intro: "",
-    subsections: [
-      { title: "", tasks: [
-        { id:"I-0-0", text:"Terms of Service for the website (custom order terms, cancellation policy)" },
-        { id:"I-0-1", text:"Privacy Policy (email collection, Klaviyo tracking, cookies)" },
-        { id:"I-0-2", text:"Return/Refund Policy for corporate orders (custom products \u2014 what\u2019s returnable?)" },
-        { id:"I-0-3", text:"Food handling compliance \u2014 MN regulations for shipping food items interstate" },
-        { id:"I-0-4", text:"Labeling requirements \u2014 do shipped food items need ingredient/allergen labels?" },
-        { id:"I-0-5", text:"Business license \u2014 verify current license covers online/interstate sales" },
-        { id:"I-0-6", text:"Shipping insurance \u2014 at what order value do you automatically insure?" },
-        { id:"I-0-7", text:"ADA compliance \u2014 website accessibility basics (alt text, contrast, keyboard nav)" },
-      ]},
-    ]
-  },
-  {
-    id: "J", title: "J. Accounts & Integrations to Set Up",
-    intro: "",
-    subsections: [
-      { title: "Payment Processing", tasks: [
-        { id:"J-0-0", text:"Shopify Payments or Stripe account \u2014 set up and verify" },
-        { id:"J-0-1", text:"Test transaction to confirm funds flow" },
-        { id:"J-0-2", text:"Configure tax collection in payment processor" },
-      ]},
-      { title: "Email Marketing", tasks: [
-        { id:"J-1-0", text:"Create Klaviyo account" },
-        { id:"J-1-1", text:"Set up Klaviyo API key (the code already has the sink ready)" },
-        { id:"J-1-2", text:"Import past customer email list into Klaviyo" },
-        { id:"J-1-3", text:"Set up email templates matching brand style" },
-        { id:"J-1-4", text:"Configure event-triggered flows (draft_created, email_captured, design_asset_uploaded, order_submitted, etc.)" },
-      ]},
-      { title: "Shipping", tasks: [
-        { id:"J-2-0", text:"FedEx and/or UPS business account" },
-        { id:"J-2-1", text:"Get API credentials for real-time rate quotes" },
-        { id:"J-2-2", text:"Set up label printing workflow (or confirm existing process)" },
-        { id:"J-2-3", text:"Confirm daily pickup schedule with carrier" },
-      ]},
-      { title: "Analytics", tasks: [
-        { id:"J-3-0", text:"Google Analytics 4 \u2014 set up property + tracking code" },
-        { id:"J-3-1", text:"Set up conversion goals (completed order, email captured, design uploaded)" },
-        { id:"J-3-2", text:"Facebook Pixel (if running FB/IG ads)" },
-        { id:"J-3-3", text:"LinkedIn Insight Tag (if running LinkedIn ads)" },
-      ]},
-      { title: "Domain & Hosting", tasks: [
-        { id:"J-4-0", text:"Confirm domain strategy: keep simplynutsandmore.com? New domain?" },
-        { id:"J-4-1", text:"DNS configuration for new hosting (Shopify/Hydrogen deployment)" },
-        { id:"J-4-2", text:"SSL certificate (automatic with most hosts)" },
-        { id:"J-4-3", text:"Email forwarding / business email setup (info@, orders@)" },
-      ]},
-    ]
-  },
-  {
-    id: "K", title: "K. Operational Readiness",
-    intro: "The website is one thing. Actually fulfilling orders is another.",
-    subsections: [
-      { title: "Past Customer Data", tasks: [
-        { id:"K-0-0", text:"Export all past corporate client data (names, emails, companies, previous orders)" },
-        { id:"K-0-1", text:"Clean up and format for Klaviyo import" },
-        { id:"K-0-2", text:"Identify top 20 clients for personal re-engagement outreach" },
-        { id:"K-0-3", text:"Recover/recreate previous logo designs for pre-loading into the new tool" },
-      ]},
-      { title: "Employee Training", tasks: [
-        { id:"K-1-0", text:"Train staff on how orders will come in from the new website" },
-        { id:"K-1-1", text:"Document the new workflow: order received \u2192 proof approval \u2192 production \u2192 ship" },
-        { id:"K-1-2", text:"Set up internal notification system (email/Slack) for new orders" },
-      ]},
-      { title: "Production Capacity Planning", tasks: [
-        { id:"K-2-0", text:"Max orders per day with 2 Epilog machines running simultaneously" },
-        { id:"K-2-1", text:"Bottleneck analysis: engraving (6 lids \u00d7 30+ min) vs assembly vs shipping" },
-        { id:"K-2-2", text:"Plan for scaling during peak November\u2013December rush" },
-        { id:"K-2-3", text:"Backup plan if a machine goes down" },
-      ]},
-      { title: "Quality Control", tasks: [
-        { id:"K-3-0", text:"Engraving quality check process (before assembly)" },
-        { id:"K-3-1", text:"Correct nut/chocolate selection verification" },
-        { id:"K-3-2", text:"Final inspection before boxing and shipping" },
-        { id:"K-3-3", text:"Photo documentation of finished orders (for disputes + social proof)" },
-      ]},
-      { title: "Launch Timeline", tasks: [
-        { id:"K-4-0", text:"Target launch date" },
-        { id:"K-4-1", text:"Marketing soft launch (email past customers)" },
-        { id:"K-4-2", text:"Social media content start date" },
-        { id:"K-4-3", text:"Early bird promotion start" },
-        { id:"K-4-4", text:"Hard deadline for accepting holiday orders" },
-        { id:"K-4-5", text:"Last shipping date for holiday delivery" },
-      ]},
-    ]
-  },
-];
-
-// ============================================================
-// STATE MANAGEMENT
-// ============================================================
-const STORAGE_KEY = "snm-task-tracker";
-
-let state = loadState();
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { version: 1, tasks: {}, collapsed: {}, notes: {}, sectionMeta: {} };
-}
-
-function saveState() {
-  state.lastModified = new Date().toISOString();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  // Push to Supabase if connected
-  if (fbReady && sb) {
-    updateSyncDot("syncing");
-    pushState();
-  }
-}
-
-function getTask(id) {
-  return state.tasks[id] || { done: false, link: "", assignee: "" };
-}
-
-function setTask(id, updates) {
-  if (!state.tasks[id]) state.tasks[id] = { done: false, link: "", assignee: "" };
-  Object.assign(state.tasks[id], updates);
-  saveState();
-}
-
-function getNote(sectionId) {
-  if (!state.notes) state.notes = {};
-  return state.notes[sectionId] || "";
-}
-
-function setNote(sectionId, text) {
-  if (!state.notes) state.notes = {};
-  state.notes[sectionId] = text;
-  saveState();
-}
-
-function getSectionMeta(sectionId) {
-  if (!state.sectionMeta) state.sectionMeta = {};
-  return state.sectionMeta[sectionId] || { directions: "", docLink: "", docLinkText: "", assignee: "", open: false };
-}
-
-function setSectionMeta(sectionId, updates) {
-  if (!state.sectionMeta) state.sectionMeta = {};
-  if (!state.sectionMeta[sectionId]) state.sectionMeta[sectionId] = { directions: "", docLink: "", docLinkText: "", assignee: "", open: false };
-  Object.assign(state.sectionMeta[sectionId], updates);
-  saveState();
-}
-
-// ============================================================
-// SUPABASE SYNC  (Postgres-backed — replaces Firebase)
-// ============================================================
-// 1. Create a free project at supabase.com
-// 2. Run the SQL setup block (provided separately) in the SQL Editor
-// 3. Settings -> API: paste your Project URL and anon public key below
 const SUPABASE_URL = "https://lijzynxznwlbvplcwnzn.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxpanp5bnh6bndsYnZwbGN3bnpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NjUyMzQsImV4cCI6MjA5NzI0MTIzNH0.H-UuyPVFUkim0voD739a5lA_DZoQ-zlA542asYQFQvM";
-const ROW_ID = "main";                                         // single shared record
-let sb = null;
-let fbReady = false;   // kept name so saveState() stays untouched-friendly
+let sb=null;
+try{ if(typeof supabase!=="undefined") sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }catch(e){}
 
-function updateSyncDot(status) {
-  const dot = document.getElementById("syncDot");
-  const txt = document.getElementById("syncText");
-  if (!dot || !txt) return;
-  dot.className = "sync-dot " + status;
-  const labels = { connected: "Synced", syncing: "Syncing\u2026", error: "Sync error", offline: "Local only" };
-  txt.textContent = labels[status] || status;
-}
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+let toastT=null;
+function toast(msg,err){ const t=$("toast"); t.textContent=msg; t.className="toast show"+(err?" err":""); clearTimeout(toastT); toastT=setTimeout(()=>t.className="toast",2200); }
 
-// Visible banner so people KNOW when data is saving only on this device
-function showSyncBanner(err) {
-  let b = document.getElementById("syncBanner");
-  if (!b) {
-    b = document.createElement("div");
-    b.id = "syncBanner";
-    b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9999;padding:10px 16px;" +
-      "background:#7a2e1e;color:#ffe9e0;font:600 13px/1.4 system-ui,sans-serif;text-align:center;" +
-      "box-shadow:0 -4px 14px rgba(0,0,0,.3);";
-    document.body.appendChild(b);
-  }
-  const code = (err && err.code ? String(err.code) : "").toLowerCase();
-  let hint = "";
-  if (code.indexOf("not-configured") > -1) hint = " (Supabase keys not added to the file yet.)";
-  else if (code.indexOf("permission") > -1 || code.indexOf("42501") > -1 || code.indexOf("pgrst") > -1) hint = " (Database access policy needs updating.)";
-  b.innerHTML = "\u26a0\ufe0f Saving on this device only \u2014 cloud sync is off, so others won't see your changes yet." +
-    hint + " <span style='opacity:.75'>Your work is safe locally.</span>";
-  b.style.display = "block";
-}
-function hideSyncBanner() {
-  const b = document.getElementById("syncBanner");
-  if (b) b.style.display = "none";
-}
-
-function initSupabase() {
-  const unconfigured = !SUPABASE_URL.includes("supabase.co") || SUPABASE_ANON_KEY.indexOf("YOUR") === 0;
-  if (unconfigured) { updateSyncDot("offline"); showSyncBanner({ code: "not-configured" }); return; }
-  if (typeof supabase === "undefined") { updateSyncDot("offline"); showSyncBanner({ code: "client-missing" }); return; }
-  try {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    updateSyncDot("syncing");
-
-    // Initial load of the shared record
-    sb.from("tracker_state").select("data,last_modified").eq("id", ROW_ID).maybeSingle()
-      .then(({ data, error }) => {
-        if (error) { fbReady = false; updateSyncDot("error"); showSyncBanner(error); return; }
-        if (!data) {
-          // First device ever — seed the cloud with local state
-          pushState().then(() => { fbReady = true; updateSyncDot("connected"); hideSyncBanner(); });
-          return;
-        }
-        const remote = data.data;
-        // Accept remote only if strictly newer than ours
-        if (remote && (!state.lastModified || (remote.lastModified && remote.lastModified > state.lastModified))) {
-          mergeRemote(remote);
-        }
-        fbReady = true;
-        updateSyncDot("connected");
-        hideSyncBanner();
-      });
-
-    // Realtime — apply other devices' changes as they happen
-    sb.channel("tracker_state_changes")
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "tracker_state", filter: "id=eq." + ROW_ID },
-        (payload) => {
-          const remote = payload.new && payload.new.data;
-          if (remote && remote.lastModified && (!state.lastModified || remote.lastModified > state.lastModified)) {
-            mergeRemote(remote);
-          }
-        })
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED" && fbReady) { updateSyncDot("connected"); }
-      });
-  } catch (e) {
-    console.warn("Supabase sync unavailable:", e);
-    updateSyncDot("offline");
-    showSyncBanner(e);
-  }
-}
-
-// Write the whole state blob to the single shared row
-function pushState() {
-  if (!sb) return Promise.resolve();
-  return sb.from("tracker_state")
-    .upsert({ id: ROW_ID, data: state, last_modified: state.lastModified || new Date().toISOString() })
-    .then(({ error }) => {
-      if (error) { updateSyncDot("error"); showSyncBanner(error); }
-      else { updateSyncDot("connected"); hideSyncBanner(); }
-    });
-}
-
-// Adopt a newer remote state and re-render
-function mergeRemote(remote) {
-  remote.tasks = remote.tasks || {};
-  remote.collapsed = remote.collapsed || {};
-  remote.notes = remote.notes || {};
-  remote.sectionMeta = remote.sectionMeta || {};
-  if (!remote.version) remote.version = 1;
-  state = remote;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  renderAll();
-  updateAllProgress();
-}
-
-// ============================================================
-// COUNTING
-// ============================================================
-function countAll() {
-  let total = 0, done = 0;
-  SECTIONS.forEach(s => s.subsections.forEach(sub => sub.tasks.forEach(t => {
-    total++;
-    if (getTask(t.id).done) done++;
-  })));
-  return { total, done };
-}
-
-function countSection(sectionId) {
-  const sec = SECTIONS.find(s => s.id === sectionId);
-  if (!sec) return { total: 0, done: 0 };
-  let total = 0, done = 0;
-  sec.subsections.forEach(sub => sub.tasks.forEach(t => {
-    total++;
-    if (getTask(t.id).done) done++;
-  }));
-  return { total, done };
-}
-
-// ============================================================
-// RENDERING
-// ============================================================
-function renderAll() {
-  const container = document.getElementById("sections");
-  container.innerHTML = SECTIONS.map(renderSection).join("");
-  updateAllProgress();
-  restoreCollapse();
-  populateAssigneeFilter();
-  applyFilters();
-}
-
-function renderSection(section) {
-  const isOpen = !state.collapsed[section.id];
-  const meta = getSectionMeta(section.id);
-  const hasMetaLink = meta.docLink && meta.docLink.trim() && meta.docLinkText && meta.docLinkText.trim();
-  return `
-    <div class="section-wrap" data-wrap="${section.id}">
-      <div class="section-top-bar">
-        <div class="section-top-fill" data-topfill="${section.id}"></div>
-        <span class="section-top-pct" data-toppct="${section.id}">0%</span>
-      </div>
-      <details class="section" data-section="${section.id}" ${isOpen ? "open" : ""}>
-        <summary>
-          <button class="section-meta-toggle ${meta.open ? "open" : ""}" data-meta-toggle="${section.id}" title="Section directions &amp; details">+</button>
-          <span class="section-arrow"></span>
-          <span class="section-title">${section.title}</span>
-          <span class="section-progress" data-progress="${section.id}"></span>
-          <div class="section-bar"><div class="section-bar-fill" data-bar="${section.id}"></div></div>
-        </summary>
-        <div class="section-body">
-          <div class="section-meta ${meta.open ? "visible" : ""}" data-meta="${section.id}">
-            <div class="section-meta-field">
-              <label>Section Assignee</label>
-              <input type="text" class="meta-assignee" data-meta-assignee="${section.id}" placeholder="Assign someone to this entire section\u2026" value="${escHtml(meta.assignee)}" />
-            </div>
-            <div class="section-meta-field">
-              <label>Directions</label>
-              <textarea class="meta-directions" data-meta-directions="${section.id}" placeholder="Add directions or instructions for this section\u2026">${escHtml(meta.directions)}</textarea>
-            </div>
-            <div class="section-meta-field">
-              <label>Section Document</label>
-              <div class="meta-link-row">
-                <input type="text" class="meta-link-text" data-meta-link-text="${section.id}" placeholder="Display text (e.g. Project Brief)" value="${escHtml(meta.docLinkText)}" />
-                <input type="url" class="meta-link-url" data-meta-link-url="${section.id}" placeholder="Paste document URL\u2026" value="${escHtml(meta.docLink)}" />
-              </div>
-              ${hasMetaLink ? `<div class="meta-link-rendered"><a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a></div>` : ""}
-            </div>
-          </div>
-          ${section.intro ? `<p class="section-intro">${section.intro}</p>` : ""}
-          ${section.subsections.map(sub => renderSubsection(sub)).join("")}
-          <div class="section-notes-wrap">
-            <div class="section-notes-label">Notes &amp; Additional Info</div>
-            <textarea class="section-notes" data-notes="${section.id}" placeholder="Add notes, reminders, or essential details for this section\u2026">${escHtml(getNote(section.id))}</textarea>
-          </div>
-        </div>
-      </details>
-    </div>`;
-}
-
-function renderSubsection(sub) {
-  return `
-    <div class="subsection">
-      ${sub.title ? `<h3>${sub.title}</h3>` : ""}
-      <div class="task-list">
-        ${sub.tasks.map(t => renderTask(t)).join("")}
-      </div>
-    </div>`;
-}
-
-function renderTask(t) {
-  const s = getTask(t.id);
-  const hasLink = s.link && s.link.trim().length > 0;
-  return `
-    <div class="task ${s.done ? "done" : ""}" data-id="${t.id}">
-      <label class="task-check">
-        <input type="checkbox" ${s.done ? "checked" : ""} />
-        <span class="task-text">${t.text}</span>
-      </label>
-      <div class="task-fields">
-        <input type="text" class="field-assignee" placeholder="Assignee" value="${escHtml(s.assignee)}" />
-        <div class="link-group">
-          <input type="url" class="field-link" placeholder="Paste link\u2026" value="${escHtml(s.link)}" />
-          <a class="link-out ${hasLink ? "visible" : ""}" href="${hasLink ? escHtml(s.link) : "#"}" target="_blank" rel="noopener" title="Open link">\u2197</a>
-        </div>
-      </div>
-    </div>`;
-}
-
-function escHtml(str) {
-  if (!str) return "";
-  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-// ============================================================
-// PROGRESS UPDATES
-// ============================================================
-function updateAllProgress() {
-  const g = countAll();
-  document.getElementById("globalFill").style.width = g.total ? (g.done/g.total*100)+"%":"0%";
-  document.getElementById("globalText").textContent = `${g.done} / ${g.total} done`;
-
-  SECTIONS.forEach(sec => {
-    const c = countSection(sec.id);
-    const pct = c.total ? Math.round(c.done/c.total*100) : 0;
-    const progEl = document.querySelector(`[data-progress="${sec.id}"]`);
-    const barEl = document.querySelector(`[data-bar="${sec.id}"]`);
-    if (progEl) progEl.textContent = `${c.done} / ${c.total}`;
-    if (barEl) barEl.style.width = c.total ? pct+"%":"0%";
-
-    // Green top bar
-    const topFill = document.querySelector(`[data-topfill="${sec.id}"]`);
-    const topPct = document.querySelector(`[data-toppct="${sec.id}"]`);
-    if (topFill) topFill.style.width = pct + "%";
-    if (topPct) {
-      topPct.textContent = pct + "%";
-      // Position % label at right edge of fill, but clamp to stay visible
-      if (pct < 12) {
-        topPct.style.left = pct + "%";
-        topPct.style.color = "var(--pine)";
-      } else {
-        topPct.style.left = (pct - 1) + "%";
-        topPct.style.color = "#fff";
-        topPct.style.textAlign = "right";
-        topPct.style.transform = "translateX(-100%) translateY(-50%)";
-      }
-      if (pct === 0) {
-        topPct.style.left = "4px";
-        topPct.style.transform = "translateY(-50%)";
-        topPct.style.color = "var(--wood-200)";
-      }
-    }
-  });
-
-  updateDashboard();
-  updateFooter();
-}
-
-function updateFooter() {
-  const foot = document.getElementById("footerInfo");
-  const bytes = new Blob([localStorage.getItem(STORAGE_KEY)||""]).size;
-  const kb = (bytes/1024).toFixed(1);
-  const mod = state.lastModified ? new Date(state.lastModified).toLocaleString() : "never";
-  foot.textContent = `Last saved: ${mod} \u00b7 Storage: ${kb} KB`;
-}
-
-// ============================================================
-// COLLAPSE STATE
-// ============================================================
-function restoreCollapse() {
-  document.querySelectorAll("details.section").forEach(el => {
-    const sid = el.dataset.section;
-    if (state.collapsed[sid]) el.removeAttribute("open");
-    else el.setAttribute("open","");
-  });
-}
-
-// ============================================================
-// EVENT HANDLERS
-// ============================================================
-const debouncers = {};
-function debounce(key, fn, ms) {
-  clearTimeout(debouncers[key]);
-  debouncers[key] = setTimeout(fn, ms);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderAll();
-  renderMilestones();
-
-  const main = document.getElementById("sections");
-
-  // Checkbox changes
-  main.addEventListener("change", (e) => {
-    if (e.target.type !== "checkbox") return;
-    const row = e.target.closest(".task");
-    if (!row) return;
-    const id = row.dataset.id;
-    const checked = e.target.checked;
-    setTask(id, { done: checked });
-    row.classList.toggle("done", checked);
-    row.querySelector(".task-text").style.textDecoration = checked ? "line-through" : "none";
-    row.querySelector(".task-text").style.opacity = checked ? "0.5" : "1";
-    updateAllProgress();
-  });
-
-  // Section meta toggle ("+" button) — must prevent <details> from toggling
-  main.addEventListener("click", (e) => {
-    const btn = e.target.closest(".section-meta-toggle");
-    if (!btn) return;
-    e.stopPropagation();
-    e.preventDefault();
-    const sid = btn.dataset.metaToggle;
-    const panel = main.querySelector(`.section-meta[data-meta="${sid}"]`);
-    const isOpen = panel.classList.toggle("visible");
-    btn.classList.toggle("open", isOpen);
-    setSectionMeta(sid, { open: isOpen });
-  });
-
-  // Section meta fields (debounced) + Section notes (debounced) + task fields
-  main.addEventListener("input", (e) => {
-    // Section notes
-    if (e.target.classList.contains("section-notes")) {
-      const sid = e.target.dataset.notes;
-      debounce("note-"+sid, () => setNote(sid, e.target.value), 300);
-      return;
-    }
-
-    // Section meta: assignee
-    if (e.target.classList.contains("meta-assignee")) {
-      const sid = e.target.dataset.metaAssignee;
-      debounce("meta-assignee-"+sid, () => setSectionMeta(sid, { assignee: e.target.value.trim() }), 300);
-      return;
-    }
-
-    // Section meta: directions
-    if (e.target.classList.contains("meta-directions")) {
-      const sid = e.target.dataset.metaDirections;
-      debounce("meta-dir-"+sid, () => setSectionMeta(sid, { directions: e.target.value }), 300);
-      return;
-    }
-
-    // Section meta: doc link text
-    if (e.target.classList.contains("meta-link-text")) {
-      const sid = e.target.dataset.metaLinkText;
-      debounce("meta-lt-"+sid, () => {
-        setSectionMeta(sid, { docLinkText: e.target.value.trim() });
-        updateMetaLinkPreview(sid);
-      }, 300);
-      return;
-    }
-
-    // Section meta: doc link URL
-    if (e.target.classList.contains("meta-link-url")) {
-      const sid = e.target.dataset.metaLinkUrl;
-      debounce("meta-lu-"+sid, () => {
-        setSectionMeta(sid, { docLink: e.target.value.trim() });
-        updateMetaLinkPreview(sid);
-      }, 300);
-      return;
-    }
-
-    const row = e.target.closest(".task");
-    if (!row) return;
-    const id = row.dataset.id;
-
-    if (e.target.classList.contains("field-assignee")) {
-      debounce("assign-"+id, () => setTask(id, { assignee: e.target.value.trim() }), 300);
-    }
-    if (e.target.classList.contains("field-link")) {
-      debounce("link-"+id, () => {
-        const val = e.target.value.trim();
-        setTask(id, { link: val });
-        const icon = row.querySelector(".link-out");
-        if (val) {
-          icon.classList.add("visible");
-          icon.href = val;
-        } else {
-          icon.classList.remove("visible");
-          icon.href = "#";
-        }
-      }, 300);
-    }
-  });
-
-  // Collapse persistence (toggle doesn't bubble — use capture)
-  main.addEventListener("toggle", (e) => {
-    if (e.target.tagName === "DETAILS") {
-      const sid = e.target.dataset.section;
-      state.collapsed[sid] = !e.target.open;
-      saveState();
-    }
-  }, true);
-
-  // Filter
-  document.getElementById("filter").addEventListener("change", applyFilters);
-  document.getElementById("assigneeFilter").addEventListener("change", applyFilters);
-
-  // Expand/Collapse All
-  document.getElementById("expandAll").addEventListener("click", () => {
-    document.querySelectorAll("details.section").forEach(el => { el.open = true; });
-    SECTIONS.forEach(s => { state.collapsed[s.id] = false; });
-    saveState();
-  });
-  document.getElementById("collapseAll").addEventListener("click", () => {
-    document.querySelectorAll("details.section").forEach(el => { el.open = false; });
-    SECTIONS.forEach(s => { state.collapsed[s.id] = true; });
-    saveState();
-  });
-
-  // Export / Import
-  document.getElementById("exportBtn").addEventListener("click", exportJSON);
-  document.getElementById("importBtn").addEventListener("click", () => {
-    document.getElementById("importFile").click();
-  });
-  document.getElementById("importFile").addEventListener("change", (e) => {
-    if (e.target.files[0]) importJSON(e.target.files[0]);
-    e.target.value = "";  // reset so same file can be re-imported
-  });
-
-  // Start cloud sync
-  initSupabase();
+/* tabs */
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); $("panel-"+b.dataset.tab).classList.add("active");
+  if(b.dataset.tab==="products"){ loadProducts(); }
+  if(b.dataset.tab==="content"){ loadDescriptions(); loadFaq(); }
+  if(b.dataset.tab==="marketing"){ loadAccounts(); loadAssets(); }
 });
 
-// ============================================================
-// DASHBOARD CHARTS
-// ============================================================
-const CHART_COLORS = [
-  "#3e5f43","#b56a3b","#6e4023","#3d8b3d","#c45e20",
-  "#5b8a72","#d4956b","#8b5529","#2d6b2d","#e8c9a0",
-  "#7db892","#a0522d","#4a7c59","#cc7744","#556b2f"
+/* Chippy */
+let chipTimer=null;
+function chip(state,ms){ const el=$("chip"); el.className="chip-wrap is-"+state; clearTimeout(chipTimer); chipTimer=setTimeout(()=>el.className="chip-wrap is-idle",ms||600); }
+const LINES={lock:["Mmm, data.","Into the cheek pouch.","Nutritious.","Tasty."],combo:["COMBO! I'm vibrating!","Cheeks at maximum!","Don't stop!"],win:["KABOOM! Ship it!","MY HEAD CAME OFF","It's ALIVE and shiny!"],wrong:["...I pooped. Fill it in first.","Nope. *plop*","Not done yet 💩"],deflate:["pffft... combo gone.","I deflated. Worth it?"]};
+function say(set){ const a=LINES[set]; $("bubble").textContent=a[Math.floor(Math.random()*a.length)]; }
+function burst(){ const r=$("chip").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.6,cols=["#E8A830","#8BA45A","#E5734E","#F6EFE2","#C9772E"];
+  for(let i=0;i<28;i++){ const p=document.createElement("div");p.className="confetti-piece";const ang=Math.random()*Math.PI*2,dist=50+Math.random()*120;
+    p.style.left=cx+"px";p.style.top=cy+"px";p.style.background=cols[i%cols.length];
+    p.style.setProperty("--dx",(Math.cos(ang)*dist)+"px");p.style.setProperty("--dy",(Math.sin(ang)*dist+90)+"px");
+    p.style.setProperty("--rot",(Math.random()*720-360)+"deg");p.style.setProperty("--dur",(0.9+Math.random()*0.7)+"s");
+    document.body.appendChild(p);setTimeout(()=>p.remove(),1700);} }
+function dropPoop(){ const r=$("chFloor").getBoundingClientRect();const el=document.createElement("div");el.className="poop-pellet";el.textContent="💩";
+  el.style.left=(r.left+(Math.random()*22-11))+"px";el.style.top=(r.top+6)+"px";document.body.appendChild(el);
+  setTimeout(()=>el.classList.add("fade"),1100);setTimeout(()=>el.remove(),1600); }
+function floater(t,c){ const el=document.createElement("span");el.className="floater";el.textContent=t;el.style.color=c;$("floaters").appendChild(el);setTimeout(()=>el.remove(),1100); }
+
+/* ---------- Pricing settings ---------- */
+let settings={pack:0,labor:0,ship:0,margin:55};
+try{ const s=JSON.parse(localStorage.getItem("snm_pricing")||"null"); if(s) settings=s; }catch(e){}
+function openGear(){ $("s_pack").value=settings.pack||"";$("s_labor").value=settings.labor||"";$("s_ship").value=settings.ship||"";$("s_margin").value=settings.margin||"";$("priceModal").classList.add("show"); }
+$("gearBtn").onclick=openGear;
+$("s_close").onclick=()=>$("priceModal").classList.remove("show");
+$("s_save").onclick=()=>{ settings={pack:+$("s_pack").value||0,labor:+$("s_labor").value||0,ship:+$("s_ship").value||0,margin:+$("s_margin").value||55};
+  localStorage.setItem("snm_pricing",JSON.stringify(settings));
+  if(sb) sb.from("settings").upsert({id:"main",packaging_cost:settings.pack,labor_cost:settings.labor,shipping_cost:settings.ship,margin:settings.margin}).then(()=>{});
+  $("priceModal").classList.remove("show"); toast("Pricing settings saved"); };
+function suggestRetail(wholesale){ const cost=(+wholesale||0)+settings.pack+settings.labor+settings.ship; const m=Math.min(settings.margin,95)/100; const r=m<1?cost/(1-m):cost*2; return Math.max(1,Math.ceil(r)); }
+
+/* ---------- Products game ---------- */
+const PHOTOS=[["🥜","Peanuts"],["🌰","Mixed"],["🍫","Chocolate"],["🥥","Coconut"],["🍯","Honey"],["🍒","Dried Fruit"]];
+const CATEGORIES=["Roasted Nuts","Chocolate & Clusters","Trail Mix","Dried Fruit","Gift Tin"];
+const STEPS=[
+  {id:"photo",label:"Pick its look",hint:"Choose a graphic for the bag"},
+  {id:"name",label:"What's it called?",hint:"The name customers see"},
+  {id:"category",label:"Which shelf?",hint:"Pick a category"},
+  {id:"weight",label:"How much in the bag?",hint:"Net weight + unit"},
+  {id:"wholesale",label:"Wholesale cost ($/bag)",hint:"What it costs you to make one bag"},
+  {id:"price",label:"Retail price",hint:"We'll suggest one from your cost"},
+  {id:"dietary",label:"Good-to-knows?",hint:"Dietary badges"},
+  {id:"inventory",label:"How many in stock?",hint:"Current count"},
+  {id:"desc",label:"Sell it in one line",hint:"Short description"}
 ];
-
-function hiDpiCanvas(canvas, w, h) {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  canvas.style.width = w + "px";
-  canvas.style.height = h + "px";
-  const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
-  return ctx;
+const COMBO_WINDOW=5000,TARGET=70,SECS_PER=8;
+let v=blank(),done=[],step=0,score=0,combo=0,lastLock=0,startedAt=null,shipped=0,finished=false,products=[];
+let editingProductId=null,pData=[],dData=[],qData=[],aData=[],mData=[],dEdit=null,qEdit=null,aEdit=null,mEdit=null;
+function rowActs(id){ const i=esc(String(id)); return `<span class="rowacts"><button class="iconbtn edit" data-id="${i}" title="Edit">✎</button><button class="iconbtn del" data-id="${i}" title="Delete">🗑</button></span>`; }
+function wireRowActions(el,data,onEdit,table,reload){
+  el.querySelectorAll(".iconbtn.edit").forEach(b=>b.onclick=()=>{ const row=data.find(x=>String(x.id)===b.dataset.id); if(row) onEdit(row); });
+  el.querySelectorAll(".iconbtn.del").forEach(b=>b.onclick=async()=>{ if(!confirm("Delete this entry? This can't be undone.")) return; if(!sb){toast("Not connected",true);return;} const {error}=await sb.from(table).delete().eq("id",b.dataset.id); if(error){ toast("Delete failed: "+error.message,true); } else { toast("Deleted"); reload(); } });
 }
+function blank(){ return {photo:null,photoLabel:"",name:"",category:"",sku:"",weightVal:"",weightUnit:"oz",wholesale:"",price:"",dietary:{gf:false,df:false},inventory:"",desc:""}; }
+function valid(id){ const x=v;
+  if(id==="photo")return !!x.photo; if(id==="name")return x.name.trim().length>=2; if(id==="category")return !!x.category;
+  if(id==="weight")return parseFloat(x.weightVal)>0;
+  if(id==="wholesale")return parseFloat(x.wholesale)>=0 && x.wholesale!==""; if(id==="price")return parseFloat(x.price)>0;
+  if(id==="dietary")return true; if(id==="inventory")return x.inventory!=="" && parseInt(x.inventory)>=0;
+  if(id==="desc")return x.desc.trim().length>=4; return false; }
+const mult=()=>combo>0?Math.min(combo,5):1;
 
-function drawPieChart(canvasId, legendId, slices) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const size = 180;
-  const ctx = hiDpiCanvas(canvas, size, size);
-  const cx = size / 2, cy = size / 2, r = 70;
-  const total = slices.reduce((a, s) => a + s.value, 0);
-
-  ctx.clearRect(0, 0, size, size);
-
-  if (total === 0) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = "#e8d9c7";
-    ctx.fill();
-    ctx.fillStyle = "#6e4023";
-    ctx.font = "600 11px -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("No data", cx, cy);
-
-    const legend = document.getElementById(legendId);
-    if (legend) legend.innerHTML = "";
+function renderSteps(){
+  $("steps").innerHTML=STEPS.map((s,i)=>{ const isDone=done.includes(s.id),isActive=i===step&&!finished;
+    return `<li class="stepitem ${isActive?"active":""} ${isDone?"done":""}"><button class="stepchip" data-step="${i}" ${finished?"disabled":""}><span class="stepdot">${isDone?"✓":i+1}</span><span class="steplabel">${s.label}</span></button>${isActive?fieldHtml(s):""}</li>`;
+  }).join("");
+  const left=STEPS.length-done.length;
+  $("eta").textContent=finished?"Done!":`~${left*SECS_PER}s · ${left} field${left===1?"":"s"}`;
+  $("progFill").style.width=(done.length/STEPS.length*100)+"%"; wireField();
+}
+function fieldHtml(s){ let inner="";
+  if(s.id==="photo")inner=`<div class="picks">${PHOTOS.map(p=>`<button class="pick ${v.photo===p[0]&&v.photoLabel!=="Custom"?"sel":""}" data-photo="${p[0]}"><span>${p[0]}</span><small>${p[1]}</small></button>`).join("")}</div><input class="in" id="fEmoji" style="margin-top:8px" placeholder="…or paste any emoji 🥨" value="${v.photoLabel==="Custom"?esc(v.photo):""}">`;
+  else if(s.id==="name")inner=`<input class="in" id="f" autofocus placeholder="e.g. Honey Roasted Cashews" value="${esc(v.name)}">`;
+  else if(s.id==="category")inner=`<div class="picks">${CATEGORIES.map(c=>`<button class="chip-pick ${v.category===c?"sel":""}" data-cat="${c}">${c}</button>`).join("")}</div>`;
+  else if(s.id==="weight")inner=`<div style="display:flex;gap:8px"><input class="in" id="f" autofocus inputmode="decimal" placeholder="8" value="${esc(v.weightVal)}"><select class="in" id="fUnit" style="width:80px">${["oz","lb","g"].map(u=>`<option ${v.weightUnit===u?"selected":""}>${u}</option>`).join("")}</select></div>`;
+  else if(s.id==="wholesale")inner=`<input class="in" id="f" autofocus inputmode="decimal" placeholder="e.g. 4.50" value="${esc(v.wholesale)}">`;
+  else if(s.id==="price"){ const sug=parseFloat(v.wholesale)>=0?suggestRetail(v.wholesale):null;
+    inner=(sug?`<button class="suggest" id="sugBtn">Suggested retail: $${sug} (from your cost + margin) — tap to use</button>`:"")+`<input class="in" id="f" autofocus inputmode="decimal" placeholder="${sug?sug:"12"}" value="${esc(v.price)}">`; }
+  else if(s.id==="dietary")inner=`<div class="picks"><button class="toggle ${v.dietary.gf?"on":""}" data-diet="gf">Gluten-Free</button><button class="toggle ${v.dietary.df?"on":""}" data-diet="df">Dairy-Free</button></div>`;
+  else if(s.id==="inventory")inner=`<input class="in" id="f" autofocus inputmode="numeric" placeholder="e.g. 48" value="${esc(v.inventory)}">`;
+  else if(s.id==="desc")inner=`<textarea class="in" id="f" rows="2" autofocus placeholder="Slow-roasted, kissed with honey, impossible to put down.">${esc(v.desc)}</textarea>`;
+  const reLock=done.includes(s.id);
+  const btn=reLock?`<button class="lock ${valid(s.id)?"":"invalid"}" id="lockBtn">Update this step</button>`:`<button class="lock ${valid(s.id)?"":"invalid"}" id="lockBtn">Lock it in <span class="lockpts">+${50*mult()}</span></button>`;
+  return `<div class="field"><div class="hint">${s.hint}</div>${inner}${btn}</div>`;
+}
+function wireField(){ const f=$("f");
+  if(f) f.oninput=()=>{ const id=STEPS[step].id;
+    if(id==="name")v.name=f.value;
+    else if(id==="weight")v.weightVal=f.value.replace(/[^0-9.]/g,"");
+    else if(id==="wholesale")v.wholesale=f.value.replace(/[^0-9.]/g,"");
+    else if(id==="price")v.price=f.value.replace(/[^0-9.]/g,"");
+    else if(id==="inventory")v.inventory=f.value.replace(/[^0-9]/g,"");
+    else if(id==="desc")v.desc=f.value;
+    const lb=$("lockBtn"); if(lb) lb.className="lock "+(valid(id)?"":"invalid"); };
+  const fu=$("fUnit"); if(fu) fu.onchange=()=>v.weightUnit=fu.value;
+  const sg=$("sugBtn"); if(sg) sg.onclick=()=>{ v.price=String(suggestRetail(v.wholesale)); renderSteps(); };
+  document.querySelectorAll("[data-photo]").forEach(b=>b.onclick=()=>{v.photo=b.dataset.photo;v.photoLabel="preset";renderSteps();});
+  const fe=$("fEmoji"); if(fe) fe.oninput=()=>{ v.photo=fe.value.trim(); v.photoLabel="Custom"; document.querySelectorAll("[data-photo]").forEach(x=>x.classList.remove("sel")); const lb=$("lockBtn"); if(lb) lb.className="lock "+(valid("photo")?"":"invalid"); };
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{v.category=b.dataset.cat;renderSteps();});
+  document.querySelectorAll("[data-diet]").forEach(b=>b.onclick=()=>{v.dietary[b.dataset.diet]=!v.dietary[b.dataset.diet];renderSteps();});
+  const lb=$("lockBtn"); if(lb) lb.onclick=lockIn;
+  document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{const i=+b.dataset.step; if(!finished){step=i;renderSteps();}});
+  if(f) f.focus();
+}
+function updateCard(){
+  if(!v.sku && v.name) v.sku=genSku();
+  setSlot("photo",()=>$("cPhoto").textContent=v.photo);
+  setSlot("category",()=>$("cCat").textContent=v.category);
+  setSlot("name",()=>$("cName").textContent=v.name);
+  setSlot("price",()=>$("cPrice").textContent="$"+v.price);
+  setSlot("weight",()=>$("cWeight").textContent="Net wt. "+v.weightVal+" "+v.weightUnit);
+  setSlot("meta",()=>$("cMeta").textContent="SKU "+v.sku+" · "+v.inventory+" in stock",done.includes("inventory"));
+  setSlot("dietary",()=>{const a=[];if(v.dietary.gf)a.push("Gluten-Free");if(v.dietary.df)a.push("Dairy-Free");$("cBadges").innerHTML=a.length?a.map(x=>`<span class="badge">${x}</span>`).join(""):`<span class="badge">No allergens noted</span>`;},done.includes("dietary"));
+  setSlot("description",()=>$("cDesc").textContent=v.desc,done.includes("desc"));
+  const pct=done.length/STEPS.length;
+  $("pcard").style.filter=finished?"none":`saturate(${0.15+pct*0.85}) opacity(${0.55+pct*0.45})`;
+}
+function setSlot(name,fill,force){ const el=document.querySelector(`[data-slot="${name}"]`); if(!el) return;
+  if(done.includes(name)||force){ el.classList.remove("ghost");el.classList.add("filled");fill(); } }
+function lockIn(){ const id=STEPS[step].id;
+  if(!valid(id)){ chip("wrong",700);say("wrong");dropPoop();return; }
+  if(done.includes(id)){ updateCard(); chip("lock",450);
+    if(editingProductId){ step=-1; renderSteps(); showEditBanner(); }
+    else { const ni=STEPS.findIndex(s=>!done.includes(s.id)); step=ni!==-1?ni:step; renderSteps(); }
     return;
   }
+  const now=Date.now(); if(startedAt===null)startedAt=now;
+  const streak=(now-lastLock<=COMBO_WINDOW&&lastLock!==0)?combo+1:1; combo=streak; lastLock=now;
+  const m=Math.min(streak,5),g=50*m; score+=g; if(!done.includes(id))done.push(id);
+  floater(`+${g}${m>1?"  ×"+m:""}`,m>2?"#8BA45A":"#E8A830");
+  if(m>=3){chip("combo",500);say("combo");}else{chip("lock",450);say("lock");}
+  updateCard(); refreshHud();
+  const ni=STEPS.findIndex((s,i)=>i>step&&!done.includes(s.id)); if(ni!==-1)step=ni;
+  if(done.length===STEPS.length)finishProduct(now); else renderSteps();
+}
+function finishProduct(now){ finished=true; const secs=startedAt?(now-startedAt)/1000:TARGET; const bonus=Math.max(0,Math.round((TARGET-secs)*5));
+  renderSteps(); updateCard();
+  setTimeout(()=>{ chip("win",1000);say("win");burst(); if(bonus>0){score+=bonus;floater("SPEED +"+bonus,"#E5734E");}
+    $("pcard").classList.add("live");
+    const sh=document.createElement("div");sh.className="shine";$("pcard").appendChild(sh);setTimeout(()=>sh.remove(),1100);
+    const st=document.createElement("div");st.className="livestamp";st.textContent="LIVE";$("pcard").appendChild(st);
+    $("cCta").classList.add("on"); refreshHud(); saveProduct();
+    $("afterCard").innerHTML=`<button class="next" id="nextBtn">Stock another product →</button>`; $("nextBtn").onclick=nextProduct;
+  },380);
+}
+function resetEntry(countShip){ v=blank();done=[];step=0;startedAt=null;finished=false;editingProductId=null;
+  $("pcard").classList.remove("live"); document.querySelectorAll(".livestamp").forEach(e=>e.remove()); $("cCta").classList.remove("on");
+  document.querySelectorAll("#pcard .slot").forEach(el=>{el.classList.remove("filled");el.classList.add("ghost");});
+  $("cPhoto").textContent="🖼️";$("cCat").textContent="Category";$("cName").textContent="Product name";$("cPrice").textContent="$0";$("cWeight").textContent="Net wt.";$("cMeta").textContent="SKU · stock";$("cBadges").innerHTML='<span class="badge ghost">dietary</span>';$("cDesc").textContent="A short, mouth-watering description goes here.";
+  if(countShip){shipped++;$("shipped").textContent=shipped;}
+  $("afterCard").innerHTML="";$("editBanner").innerHTML="";renderSteps();updateCard();
+}
+function nextProduct(){ resetEntry(true); }
+function exitEdit(){ resetEntry(false); }
+function showEditBanner(){ const el=$("editBanner"); if(!editingProductId){ el.innerHTML=""; return; }
+  el.innerHTML=`✎ Editing <b>${esc(v.name||"this product")}</b> — tap any step to change it, then <button class="btn solid" id="saveEditBtn">Save changes</button> <button class="btn" id="cancelEditBtn">Cancel</button>`;
+  $("saveEditBtn").onclick=saveEdit; $("cancelEditBtn").onclick=()=>{ exitEdit(); toast("Edit cancelled"); };
+}
+function editProduct(row){ resetEntry(false);
+  v.photo=row.photo||"🥜"; v.photoLabel="preset"; v.name=row.title||""; v.category=row.category||""; v.sku=row.sku||"";
+  const wp=(row.weight||"").split(" "); v.weightVal=(wp[0]||"").replace(/[^0-9.]/g,""); v.weightUnit=["oz","lb","g"].includes(wp[1])?wp[1]:"oz";
+  v.wholesale=row.wholesale_cost!=null?String(row.wholesale_cost):""; v.price=row.price!=null?String(row.price):"";
+  v.dietary={gf:!!row.gluten_free,df:!!row.dairy_free}; v.inventory=row.inventory!=null?String(row.inventory):""; v.desc=row.description||"";
+  done=STEPS.map(s=>s.id); step=-1; finished=false; editingProductId=row.id;
+  renderSteps(); updateCard(); showEditBanner();
+  const e=document.querySelector(".entry"); if(e) e.scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function saveEdit(){ if(!editingProductId) return; if(!sb){ toast("Not connected",true); return; }
+  if(!v.sku) v.sku=genSku();
+  const obj={title:v.name,category:v.category,sku:v.sku,weight:v.weightVal+" "+v.weightUnit,price:parseFloat(v.price)||0,inventory:parseInt(v.inventory)||0,gluten_free:v.dietary.gf,dairy_free:v.dietary.df,description:v.desc,photo:v.photo,wholesale_cost:parseFloat(v.wholesale)||0};
+  const {error}=await sb.from("products").update(obj).eq("id",editingProductId);
+  if(error){ toast("Update failed: "+error.message,true); return; }
+  toast("Product updated!"); chip("lock",450); exitEdit(); loadProducts();
+}
+async function loadProducts(){ const el=$("prodList"); if(!el) return; if(!sb){ el.innerHTML="<div class='muted'>Connect to load.</div>"; return; }
+  const {data,error}=await sb.from("products").select("*").order("created_at",{ascending:false});
+  if(error){ el.innerHTML="<div class='muted'>"+esc(error.message)+"</div>"; return; }
+  pData=data||[]; $("prodCount").textContent=pData.length?`(${pData.length})`:"";
+  el.innerHTML=pData.length?pData.map(p=>`<div class="row"><div class="rowmain"><b>${esc(p.photo||"🥜")} ${esc(p.title||"Untitled")}</b> <span class="pill">$${esc(p.price)}</span><div class="meta">${esc(p.category||"")} · ${esc(p.sku||"")} · ${esc(p.inventory)} in stock</div></div>${rowActs(p.id)}</div>`).join(""):"<div class='muted'>No products yet — stock one above!</div>";
+  wireRowActions(el,pData,editProduct,"products",loadProducts);
+}
+function refreshHud(){ $("score").textContent=score.toLocaleString(); $("combo").textContent=combo>0?"×"+Math.min(combo,5):"—"; $("combo").style.color=combo>0?"#8BA45A":"#6b5a45"; }
+setInterval(()=>{ if(lastLock){ const left=Math.max(0,1-(Date.now()-lastLock)/COMBO_WINDOW); $("comboFill").style.width=(left*100)+"%"; if(left===0&&combo>0){chip("deflate",700);say("deflate");combo=0;refreshHud();} } },90);
 
-  let startAngle = -Math.PI / 2;
-  slices.forEach((slice, i) => {
-    if (slice.value === 0) return;
-    const sliceAngle = (slice.value / total) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
-    ctx.closePath();
-    ctx.fillStyle = slice.color || CHART_COLORS[i % CHART_COLORS.length];
-    ctx.fill();
+function genSku(){ const c=((v.category||"GEN").replace(/[^A-Za-z]/g,"").slice(0,3).toUpperCase())||"GEN"; const n=((v.name||"ITEM").replace(/[^A-Za-z0-9]/g,"").slice(0,4).toUpperCase())||"ITEM"; const t=Date.now().toString(36).slice(-4).toUpperCase(); return `SNM-${c}-${n}-${t}`; }
+function gramsOf(val,unit){ const n=parseFloat(val)||0; return Math.round(n*(unit==="lb"?453.592:unit==="g"?1:28.3495)); }
+function saveProduct(){ if(!v.sku) v.sku=genSku(); const row={title:v.name,category:v.category,sku:v.sku,weight:v.weightVal+" "+v.weightUnit,price:parseFloat(v.price)||0,compare_at:null,inventory:parseInt(v.inventory)||0,gluten_free:v.dietary.gf,dairy_free:v.dietary.df,description:v.desc,photo:v.photo,wholesale_cost:parseFloat(v.wholesale)||0,_grams:gramsOf(v.weightVal,v.weightUnit)};
+  products.push(row);
+  if(sb) sb.from("products").insert({title:row.title,category:row.category,sku:row.sku,weight:row.weight,price:row.price,compare_at:row.compare_at,inventory:row.inventory,gluten_free:row.gluten_free,dairy_free:row.dairy_free,description:row.description,photo:row.photo,wholesale_cost:row.wholesale_cost}).then(({error})=>{ if(error){ toast("Saved locally — check products table",true); } else { loadProducts(); } });
+}
+function slug(s){ return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); }
+function csvCell(x){ x=(x==null)?"":String(x); return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x; }
+async function exportCSV(){
+  let list=products;
+  if(sb){ try{ const {data}=await sb.from("products").select("*"); if(data&&data.length) list=data.map(d=>({...d,_grams:gramsOf((d.weight||"").split(" ")[0],(d.weight||"").split(" ")[1]||"oz")})); }catch(e){} }
+  if(!list.length){ toast("Stock at least one product first!"); return; }
+  const cols=["Handle","Title","Body (HTML)","Vendor","Type","Tags","Published","Option1 Name","Option1 Value","Variant SKU","Variant Grams","Variant Inventory Qty","Variant Inventory Policy","Variant Price","Variant Compare At Price","Variant Requires Shipping","Variant Taxable","Image Src","Status"];
+  const rows=list.map(p=>{ const tags=[]; if(p.gluten_free)tags.push("Gluten-Free"); if(p.dairy_free)tags.push("Dairy-Free"); if(p.category)tags.push(p.category);
+    return [slug(p.title),p.title,p.description,"Simply Nuts & More",p.category,tags.join(", "),"TRUE","Title","Default Title",p.sku,p._grams||"",p.inventory,"deny",p.price,(p.compare_at||""),"TRUE","TRUE","","draft"]; });
+  const csv=[cols.map(csvCell).join(","),...rows.map(r=>r.map(csvCell).join(","))].join("\n");
+  const blob=new Blob([csv],{type:"text/csv"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="simplynuts-products-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();
+}
+$("csvBtn").onclick=exportCSV;
 
-    // Label inside slice if big enough
-    if (slice.value / total > 0.08) {
-      const midAngle = startAngle + sliceAngle / 2;
-      const lx = cx + Math.cos(midAngle) * (r * 0.6);
-      const ly = cy + Math.sin(midAngle) * (r * 0.6);
-      const pctVal = Math.round(slice.value / total * 100);
-      ctx.fillStyle = "#fff";
-      ctx.font = "700 11px -apple-system, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(pctVal + "%", lx, ly);
-    }
-
-    startAngle += sliceAngle;
-  });
-
-  // Center hole for donut effect
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.42, 0, Math.PI * 2);
-  ctx.fillStyle = "#fffdfa";
-  ctx.fill();
-
-  // Center text
-  const donePct = total > 0 ? slices[0].value : 0;
-  ctx.fillStyle = "#24160f";
-  ctx.font = "700 18px -apple-system, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  if (canvasId === "chartOverall") {
-    const g = countAll();
-    const oPct = g.total ? Math.round(g.done / g.total * 100) : 0;
-    ctx.fillText(oPct + "%", cx, cy - 4);
-    ctx.font = "500 9px -apple-system, sans-serif";
-    ctx.fillStyle = "#6e4023";
-    ctx.fillText("complete", cx, cy + 12);
-  }
-
-  // Legend
-  const legend = document.getElementById(legendId);
-  if (legend) {
-    legend.innerHTML = slices
-      .filter(s => s.value > 0)
-      .map((s, i) => `<span class="dash-legend-item"><span class="dash-legend-swatch" style="background:${s.color || CHART_COLORS[i % CHART_COLORS.length]}"></span>${s.label} (${s.value})</span>`)
-      .join("");
-  }
+/* ---------- Descriptions & FAQ ---------- */
+function nod(){ chip("lock",450); }
+function clearDesc(){ ["d_product","d_overview","d_tasting","d_allergens","d_serving","d_shelf"].forEach(i=>$(i).value=""); dEdit=null; $("d_save").textContent="Save description"; }
+function editDescription(r){ $("d_product").value=r.product||"";$("d_overview").value=r.overview||"";$("d_tasting").value=r.tasting_notes||"";$("d_allergens").value=r.ingredients_allergens||"";$("d_serving").value=r.serving||"";$("d_shelf").value=r.shelf_life||""; dEdit=r.id; $("d_save").textContent="Update description"; $("d_product").scrollIntoView({behavior:"smooth",block:"center"}); toast("Editing — change fields, then Update"); }
+$("d_save").onclick=async()=>{
+  const obj={product:$("d_product").value.trim(),overview:$("d_overview").value.trim(),tasting_notes:$("d_tasting").value.trim(),ingredients_allergens:$("d_allergens").value.trim(),serving:$("d_serving").value.trim(),shelf_life:$("d_shelf").value.trim()};
+  if(!obj.product){ toast("Add a product name first",true); return; }
+  if(!sb){ toast("Not connected to database",true); return; }
+  const {error}=dEdit?await sb.from("descriptions").update(obj).eq("id",dEdit):await sb.from("descriptions").insert(obj);
+  if(error){ toast("Save failed: "+error.message,true); } else { toast(dEdit?"Description updated!":"Description saved!"); nod(); clearDesc(); loadDescriptions(); }
+};
+async function loadDescriptions(){ const el=$("d_list"); if(!sb){el.innerHTML="<div class='muted'>Connect to load.</div>";return;}
+  const {data,error}=await sb.from("descriptions").select("*").order("created_at",{ascending:false});
+  if(error){el.innerHTML="<div class='muted'>"+esc(error.message)+"</div>";return;}
+  dData=data||[]; el.innerHTML=dData.length?dData.map(d=>`<div class="row"><div class="rowmain"><b>${esc(d.product)}</b><div class="meta">${esc((d.overview||"").slice(0,90))}</div></div>${rowActs(d.id)}</div>`).join(""):"<div class='muted'>No descriptions yet.</div>";
+  wireRowActions(el,dData,editDescription,"descriptions",loadDescriptions);
+}
+function clearFaq(){ $("q_q").value="";$("q_a").value=""; qEdit=null; $("q_save").textContent="Add question"; }
+function editFaq(r){ $("q_q").value=r.question||"";$("q_a").value=r.answer||""; qEdit=r.id; $("q_save").textContent="Update question"; $("q_q").scrollIntoView({behavior:"smooth",block:"center"}); toast("Editing — change fields, then Update"); }
+$("q_save").onclick=async()=>{
+  const obj={question:$("q_q").value.trim(),answer:$("q_a").value.trim()};
+  if(!obj.question||!obj.answer){ toast("Need both a question and answer",true); return; }
+  if(!sb){ toast("Not connected to database",true); return; }
+  const {error}=qEdit?await sb.from("faq").update(obj).eq("id",qEdit):await sb.from("faq").insert(obj);
+  if(error){ toast("Save failed: "+error.message,true); } else { toast(qEdit?"Question updated!":"Question added!"); nod(); clearFaq(); loadFaq(); }
+};
+async function loadFaq(){ const el=$("q_list"); if(!sb){el.innerHTML="<div class='muted'>Connect to load.</div>";return;}
+  const {data,error}=await sb.from("faq").select("*").order("created_at",{ascending:false});
+  if(error){el.innerHTML="<div class='muted'>"+esc(error.message)+"</div>";return;}
+  qData=data||[]; el.innerHTML=qData.length?qData.map(d=>`<div class="row"><div class="rowmain"><b>${esc(d.question)}</b><div class="meta">${esc(d.answer)}</div></div>${rowActs(d.id)}</div>`).join(""):"<div class='muted'>No questions yet.</div>";
+  wireRowActions(el,qData,editFaq,"faq",loadFaq);
 }
 
-function drawBarChart(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const w = 400, h = 180;
-  const ctx = hiDpiCanvas(canvas, w, h);
-  ctx.clearRect(0, 0, w, h);
-
-  const padL = 28, padR = 10, padT = 10, padB = 30;
-  const chartW = w - padL - padR;
-  const chartH = h - padT - padB;
-  const barGap = 4;
-  const barW = Math.floor((chartW - barGap * (SECTIONS.length - 1)) / SECTIONS.length);
-
-  // Get max
-  let maxVal = 0;
-  const data = SECTIONS.map(sec => {
-    const c = countSection(sec.id);
-    if (c.total > maxVal) maxVal = c.total;
-    return c;
-  });
-  if (maxVal === 0) maxVal = 1;
-
-  // Y-axis gridlines
-  ctx.strokeStyle = "#e8d9c7";
-  ctx.lineWidth = 0.5;
-  ctx.fillStyle = "#6e4023";
-  ctx.font = "500 9px -apple-system, sans-serif";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  for (let i = 0; i <= 4; i++) {
-    const y = padT + chartH - (i / 4) * chartH;
-    ctx.beginPath();
-    ctx.moveTo(padL, y);
-    ctx.lineTo(w - padR, y);
-    ctx.stroke();
-    ctx.fillText(Math.round(maxVal * i / 4), padL - 4, y);
-  }
-
-  // Bars
-  SECTIONS.forEach((sec, i) => {
-    const c = data[i];
-    const x = padL + i * (barW + barGap);
-    const totalH = c.total ? (c.total / maxVal) * chartH : 0;
-    const doneH = c.total ? (c.done / maxVal) * chartH : 0;
-
-    // Total bar (background)
-    ctx.fillStyle = "#e8d9c7";
-    ctx.beginPath();
-    ctx.roundRect(x, padT + chartH - totalH, barW, totalH, [3, 3, 0, 0]);
-    ctx.fill();
-
-    // Done bar (foreground)
-    if (c.done > 0) {
-      ctx.fillStyle = CHART_COLORS[i % CHART_COLORS.length];
-      ctx.beginPath();
-      ctx.roundRect(x, padT + chartH - doneH, barW, doneH, [3, 3, 0, 0]);
-      ctx.fill();
-    }
-
-    // Done count on top of bar
-    if (c.done > 0) {
-      ctx.fillStyle = "#24160f";
-      ctx.font = "700 8px -apple-system, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(c.done, x + barW / 2, padT + chartH - doneH - 2);
-    }
-
-    // Label below
-    ctx.fillStyle = "#6e4023";
-    ctx.font = "600 9px -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillText(sec.id, x + barW / 2, padT + chartH + 6);
-
-    // Total below label
-    ctx.font = "400 7px -apple-system, sans-serif";
-    ctx.fillStyle = "#b56a3b";
-    ctx.fillText("/" + c.total, x + barW / 2, padT + chartH + 18);
-  });
+/* ---------- Marketing ---------- */
+function clearAcct(){ ["a_platform","a_handle","a_url","a_owner","a_creds"].forEach(i=>$(i).value=""); aEdit=null; $("a_save").textContent="Save account"; }
+function editAccount(r){ $("a_platform").value=r.platform||"";$("a_handle").value=r.handle||"";$("a_url").value=r.url||"";$("a_owner").value=r.owner||"";$("a_creds").value=r.creds_location||""; aEdit=r.id; $("a_save").textContent="Update account"; $("a_platform").scrollIntoView({behavior:"smooth",block:"center"}); toast("Editing — change fields, then Update"); }
+$("a_save").onclick=async()=>{
+  const obj={platform:$("a_platform").value.trim(),handle:$("a_handle").value.trim(),url:$("a_url").value.trim(),owner:$("a_owner").value.trim(),creds_location:$("a_creds").value.trim()};
+  if(!obj.platform){ toast("Add a platform first",true); return; }
+  if(!sb){ toast("Not connected to database",true); return; }
+  const {error}=aEdit?await sb.from("social_accounts").update(obj).eq("id",aEdit):await sb.from("social_accounts").insert(obj);
+  if(error){ toast("Save failed: "+error.message,true); } else { toast(aEdit?"Account updated!":"Account saved!"); nod(); clearAcct(); loadAccounts(); }
+};
+async function loadAccounts(){ const el=$("a_list"); if(!sb){el.innerHTML="<div class='muted'>Connect to load.</div>";return;}
+  const {data,error}=await sb.from("social_accounts").select("*").order("created_at",{ascending:false});
+  if(error){el.innerHTML="<div class='muted'>"+esc(error.message)+"</div>";return;}
+  aData=data||[]; el.innerHTML=aData.length?aData.map(d=>`<div class="row"><div class="rowmain"><b>${esc(d.platform)}</b> <span class="pill">${esc(d.handle||"")}</span><div class="meta">${esc(d.url||"")} · owner: ${esc(d.owner||"?")} · login: ${esc(d.creds_location||"?")}</div></div>${rowActs(d.id)}</div>`).join(""):"<div class='muted'>No accounts yet.</div>";
+  wireRowActions(el,aData,editAccount,"social_accounts",loadAccounts);
+}
+function clearAsset(){ ["m_name","m_type","m_purpose","m_tags","m_loc","m_owner"].forEach(i=>$(i).value=""); mEdit=null; $("m_save").textContent="Save asset"; }
+function editAsset(r){ $("m_name").value=r.name||"";$("m_type").value=r.type||"";$("m_purpose").value=r.purpose||"";$("m_tags").value=r.tags||"";$("m_loc").value=r.file_location||"";$("m_owner").value=r.owner||""; mEdit=r.id; $("m_save").textContent="Update asset"; $("m_name").scrollIntoView({behavior:"smooth",block:"center"}); toast("Editing — change fields, then Update"); }
+$("m_save").onclick=async()=>{
+  const obj={name:$("m_name").value.trim(),type:$("m_type").value.trim(),purpose:$("m_purpose").value.trim(),tags:$("m_tags").value.trim(),file_location:$("m_loc").value.trim(),status:"collected",owner:$("m_owner").value.trim()};
+  if(!obj.name){ toast("Add an asset name first",true); return; }
+  if(!sb){ toast("Not connected to database",true); return; }
+  const {error}=mEdit?await sb.from("marketing_assets").update(obj).eq("id",mEdit):await sb.from("marketing_assets").insert(obj);
+  if(error){ toast("Save failed: "+error.message,true); } else { toast(mEdit?"Asset updated!":"Asset saved!"); nod(); clearAsset(); loadAssets(); }
+};
+async function loadAssets(){ const el=$("m_list"); if(!sb){el.innerHTML="<div class='muted'>Connect to load.</div>";return;}
+  const {data,error}=await sb.from("marketing_assets").select("*").order("created_at",{ascending:false});
+  if(error){el.innerHTML="<div class='muted'>"+esc(error.message)+"</div>";return;}
+  mData=data||[]; el.innerHTML=mData.length?mData.map(d=>`<div class="row"><div class="rowmain"><b>${esc(d.name)}</b> <span class="pill">${esc(d.type||"")}</span>${(d.tags||"").split(",").map(t=>t.trim()).filter(Boolean).map(t=>`<span class="pill">${esc(t)}</span>`).join("")}<div class="meta">${esc(d.purpose||"")} · ${esc(d.file_location||"")}</div></div>${rowActs(d.id)}</div>`).join(""):"<div class='muted'>No assets yet.</div>";
+  wireRowActions(el,mData,editAsset,"marketing_assets",loadAssets);
 }
 
-function collectAssigneeStats() {
-  const map = {};
-  SECTIONS.forEach(sec => sec.subsections.forEach(sub => sub.tasks.forEach(t => {
-    const s = getTask(t.id);
-    if (s.done && s.assignee && s.assignee.trim()) {
-      const name = s.assignee.trim();
-      map[name] = (map[name] || 0) + 1;
-    }
-  })));
-  return Object.entries(map)
-    .sort((a, b) => b[1] - a[1])
-    .map(([label, value], i) => ({
-      label,
-      value,
-      color: CHART_COLORS[i % CHART_COLORS.length]
-    }));
-}
-
-function updateDashboard() {
-  const g = countAll();
-
-  // Pie 1: Overall finished vs unfinished
-  drawPieChart("chartOverall", "legendOverall", [
-    { label: "Finished", value: g.done, color: "#3d8b3d" },
-    { label: "Remaining", value: g.total - g.done, color: "#f5e6d0" }
-  ]);
-
-  // Bar chart: per-section
-  drawBarChart("chartSections");
-
-  // Pie 2: Assignees
-  const assigneeSlices = collectAssigneeStats();
-  if (assigneeSlices.length === 0) {
-    // Show empty state
-    drawPieChart("chartAssignees", "legendAssignees", [
-      { label: "Unassigned", value: 1, color: "#e8d9c7" }
-    ]);
-  } else {
-    drawPieChart("chartAssignees", "legendAssignees", assigneeSlices);
-  }
-}
-
-// ============================================================
-// META LINK PREVIEW
-// ============================================================
-function updateMetaLinkPreview(sid) {
-  const meta = getSectionMeta(sid);
-  const panel = document.querySelector(`.section-meta[data-meta="${sid}"]`);
-  if (!panel) return;
-  const existing = panel.querySelector(".meta-link-rendered");
-  if (meta.docLink && meta.docLink.trim() && meta.docLinkText && meta.docLinkText.trim()) {
-    if (existing) {
-      existing.innerHTML = `<a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a>`;
-    } else {
-      const div = document.createElement("div");
-      div.className = "meta-link-rendered";
-      div.innerHTML = `<a href="${escHtml(meta.docLink)}" target="_blank" rel="noopener">${escHtml(meta.docLinkText)} \u2197</a>`;
-      const linkField = panel.querySelectorAll(".section-meta-field")[2];
-      if (linkField) linkField.appendChild(div);
-    }
-  } else if (existing) {
-    existing.remove();
-  }
-}
-
-// ============================================================
-// FILTER
-// ============================================================
-// Milestone countdowns — tweak the dates/labels anytime
-const MILESTONES = [
-  { name: "Data locked", date: "2026-06-30" },
-  { name: "Store built", date: "2026-07-10" },
-  { name: "Polish + launch", date: "2026-07-20" },
-];
-function renderMilestones() {
-  const el = document.getElementById("milestoneStrip");
-  if (!el) return;
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  el.innerHTML = MILESTONES.map(m => {
-    const d = new Date(m.date + "T00:00:00");
-    const days = Math.round((d - today) / 86400000);
-    let cls = "", left, color;
-    if (days < 0) { cls = "past"; left = Math.abs(days) + "d ago"; color = "var(--pine)"; }
-    else if (days === 0) { cls = "soon"; left = "Due today"; color = "var(--burn)"; }
-    else { cls = days <= 5 ? "soon" : ""; left = days + " day" + (days === 1 ? "" : "s") + " left"; color = days <= 5 ? "var(--burn)" : "var(--walnut)"; }
-    const nice = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    return `<div class="ms-chip ${cls}"><span class="ms-name">${escHtml(m.name)}</span><span class="ms-date">${nice}</span><span class="ms-left" style="color:${color}">${left}</span></div>`;
-  }).join("");
-}
-
-function applyFilters() {
-  const statusEl = document.getElementById("filter");
-  const whoEl = document.getElementById("assigneeFilter");
-  const status = statusEl ? statusEl.value : "all";
-  const who = whoEl ? whoEl.value : "all";
-  document.querySelectorAll(".task").forEach(row => {
-    const id = row.dataset.id;
-    const s = getTask(id);
-    let show = true;
-    if (status === "incomplete") show = !s.done;
-    else if (status === "complete") show = s.done;
-    else if (status === "has-link") show = !!(s.link && s.link.trim());
-    else if (status === "no-link") show = !(s.link && s.link.trim());
-    if (show && who !== "all") {
-      show = (s.assignee || "").trim().toLowerCase() === who.toLowerCase();
-    }
-    row.style.display = show ? "" : "none";
-  });
-}
-
-// Build the assignee dropdown from whoever is actually assigned, keeping selection
-function populateAssigneeFilter() {
-  const sel = document.getElementById("assigneeFilter");
-  if (!sel) return;
-  const names = new Set();
-  Object.values(state.tasks || {}).forEach(t => { if (t.assignee && t.assignee.trim()) names.add(t.assignee.trim()); });
-  Object.values(state.sectionMeta || {}).forEach(m => { if (m.assignee && m.assignee.trim()) names.add(m.assignee.trim()); });
-  const current = sel.value;
-  const sorted = Array.from(names).sort((a, b) => a.localeCompare(b));
-  sel.innerHTML = '<option value="all">Everyone</option>' +
-    sorted.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join("");
-  if (current && (current === "all" || sorted.some(n => n.toLowerCase() === current.toLowerCase()))) sel.value = current;
-}
-
-// ============================================================
-// IMPORT / EXPORT
-// ============================================================
-function importJSON(file) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (!imported.tasks) throw new Error("Invalid format — no tasks found");
-      imported.version = imported.version || 1;
-      imported.collapsed = imported.collapsed || {};
-      imported.notes = imported.notes || {};
-      imported.sectionMeta = imported.sectionMeta || {};
-      imported.lastModified = new Date().toISOString();
-      state = imported;
-      saveState();
-      renderAll();
-      updateAllProgress();
-      alert("Import successful! " + Object.keys(state.tasks).length + " task states loaded.");
-    } catch(err) {
-      alert("Import failed: " + err.message);
-    }
-  };
-  reader.readAsText(file);
-}
-
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `snm-tasks-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+/* boot */
+renderSteps(); updateCard(); refreshHud(); loadProducts();
 </script>
 </body>
 </html>
